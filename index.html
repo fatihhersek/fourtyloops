@@ -7,6 +7,31 @@
   <!-- Font: Poppins -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* iPhone ve küçük ekranlar için responsive düzen */
+@media (max-width: 880px) {
+
+  .game-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .slot-grid {
+    width: min(100%, 360px);
+  }
+
+  .controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls-group {
+    justify-content: space-between;
+  }
+
+  .btn-spin {
+    width: 100%;
+  }
+}
+
     :root {
       --color-electric-blue: #2f8fff;
       --color-gold: #f4b63f;
@@ -375,32 +400,36 @@
       z-index: 1;
     }
 
-    .slot-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(5, var(--slot-cell-size));
-      grid-auto-rows: var(--slot-cell-size);
-      gap: 6px;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+   .slot-grid {
+  position: relative;
+  z-index: 1;
+  /* max genişliği 420px, küçük ekranda %100 */
+  width: min(100%, 420px);
+  margin: 0 auto 10px;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 6px;
+}
 
     .slot-cell {
-      border-radius: 11px;
-      background: linear-gradient(145deg, #e5e7eb, #cbd5e1);
-      box-shadow:
-        0 3px 8px rgba(148, 163, 184, 0.9),
-        inset 0 0 0 1px rgba(148, 163, 184, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, filter 0.18s ease-out, background 0.18s ease-out;
-    }
+  border-radius: 11px;
+  background: linear-gradient(145deg, #e5e7eb, #cbd5e1);
+  box-shadow:
+    0 3px 8px rgba(148, 163, 184, 0.9),
+    inset 0 0 0 1px rgba(148, 163, 184, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* kare olması için */
+  aspect-ratio: 1 / 1;
+  font-size: 30px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, filter 0.18s ease-out, background 0.18s ease-out;
+}
+
 
     .slot-cell-inner {
       transform: translateY(0);
