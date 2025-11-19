@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>FourtyLOOPS Slot Machine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Font: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-electric-blue: #2f8fff;
+      --color-gold: #f4b63f;
+      --color-dark-metal: #e2e5f0;
+      --color-bg-light: #d7dff2;
+      --color-panel: #f3f4fb;
+      --color-danger: #ff4c5b;
+      --color-success: #16a34a;
+      --color-text-soft: #4b5563;
+      --slot-cell-size: 88px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #f0f4ff 0, #d7dff2 40%, #c7d1ea 100%);
+      color: #111827;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #app {
+      width: min(1200px, 100%);
+      padding: 16px;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #f9fafb 0%, #eef2ff 60%, #e0e7ff 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 20px 55px rgba(15, 23, 42, 0.35);
+      padding: 18px 18px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.16), transparent 60%),
+        radial-gradient(circle at 90% 0%, rgba(245, 158, 11, 0.16), transparent 55%);
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HEADER */
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .logo-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 25% 0, #ffffff 0, #facc15 26%, #fb7185 60%, #6366f1 100%);
+      box-shadow:
+        0 0 10px rgba(248, 250, 252, 0.9),
+        0 0 18px rgba(37, 99, 235, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-mark::after {
+      content: "FL";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    }
+
+    .logo-text-main {
+      font-size: 20px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #1d4ed8;
+      text-shadow:
+        0 0 6px rgba(191, 219, 254, 0.9),
+        0 0 14px rgba(59, 130, 246, 0.65);
+    }
+
+    .logo-text-sub {
+      font-size: 10px;
+      letter-spacing: 0.21em;
+      text-transform: uppercase;
+      color: rgba(55, 65, 81, 0.8);
+      margin-top: 2px;
+    }
+
+    .session-info {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--color-text-soft);
+    }
+
+    .badge {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      padding: 4px 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(6px);
+    }
+
+    .badge-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.7;
+    }
+
+    .badge-value {
+      font-size: 11px;
+    }
+
+    .badge-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(37, 99, 235, 0.6);
+      color: #1d4ed8;
+      background: rgba(239, 246, 255, 0.95);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--color-success);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+    }
+
+    /* LAYOUT GRID */
+    .game-body {
+      display: grid;
+      grid-template-columns: minmax(0, 2.4fr) minmax(260px, 1fr);
+      gap: 16px;
+    }
+
+    /* SLOT PANEL */
+    .slot-panel {
+      background: linear-gradient(155deg, #e5edff 0%, #f9fafb 50%, #e0f2fe 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+        0 18px 40px rgba(148, 163, 184, 0.5);
+      padding: 14px 14px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slot-panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .slot-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .slot-title {
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #111827;
+    }
+
+    .slot-sub {
+      font-size: 11px;
+      color: rgba(55, 65, 81, 0.9);
+    }
+
+    .status-chip-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* BÜYÜTÜLMÜŞ, RENKLİ LAST WIN / FREE SPINS BADGE’LERİ */
+    .status-chip {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 130, 246, 0.9);
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      color: #1e3a8a;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.9),
+        0 0 14px rgba(59, 130, 246, 0.6);
+    }
+
+    .status-chip:nth-child(2) {
+      border-color: rgba(34, 197, 94, 0.9);
+      background: linear-gradient(135deg, #bbf7d0, #6ee7b7);
+      color: #064e3b;
+      box-shadow:
+        0 0 0 1px rgba(240, 253, 250, 0.9),
+        0 0 14px rgba(34, 197, 94, 0.6);
+    }
+
+    .status-chip span {
+      opacity: 0.8;
+      font-size: 10px;
+    }
+
+    .status-chip strong {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    /* TOP WIN BANNER (LED EFFECT) */
+    .win-banner {
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-120%);
+      padding: 6px 18px;
+      border-radius: 999px;
+      border: 2px solid #f97316;
+      background: radial-gradient(circle at top, #fef3c7, #fed7aa);
+      color: #7c2d12;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow:
+        0 0 0 2px rgba(248, 250, 252, 0.9),
+        0 0 18px rgba(249, 115, 22, 0.85);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .win-banner-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #f97316;
+      box-shadow:
+        0 0 10px rgba(249, 115, 22, 0.9),
+        0 0 18px rgba(249, 115, 22, 0.8);
+    }
+
+    @keyframes ledBlink {
+      0%, 100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      50% {
+        opacity: 0.3;
+        transform: translateX(-50%) translateY(-4px);
+      }
+    }
+
+    .win-banner.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+      animation: ledBlink 0.6s ease-in-out infinite;
+    }
+
+    .win-banner.mega {
+      border-color: #22c55e;
+      background: radial-gradient(circle at top, #bbf7d0, #86efac);
+      color: #064e3b;
+      box-shadow:
+        0 0 0 2px rgba(240, 253, 250, 0.9),
+        0 0 20px rgba(34, 197, 94, 0.9);
+    }
+
+    .win-banner.ultra {
+      border-color: #6366f1;
+      background: radial-gradient(circle at top, #e0e7ff, #a5b4fc);
+      color: #111827;
+      box-shadow:
+        0 0 0 2px rgba(224, 231, 255, 0.9),
+        0 0 22px rgba(99, 102, 241, 0.9);
+    }
+
+    .win-banner.freespin {
+      border-color: #0ea5e9;
+      background: radial-gradient(circle at top, #e0f2fe, #bae6fd);
+      color: #0f172a;
+      box-shadow:
+        0 0 0 2px rgba(224, 242, 254, 0.9),
+        0 0 20px rgba(14, 165, 233, 0.9);
+    }
+
+    /* SLOT GRID */
+    .slot-grid-shell {
+      background: radial-gradient(circle at top, #d1e3ff 0%, #e5e7eb 40%, #e0f2f1 100%);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+        0 10px 28px rgba(148, 163, 184, 0.7);
+      padding: 10px 12px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slot-grid-shell-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .slot-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(5, var(--slot-cell-size));
+      grid-auto-rows: var(--slot-cell-size);
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .slot-cell {
+      border-radius: 11px;
+      background: linear-gradient(145deg, #e5e7eb, #cbd5e1);
+      box-shadow:
+        0 3px 8px rgba(148, 163, 184, 0.9),
+        inset 0 0 0 1px rgba(148, 163, 184, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, filter 0.18s ease-out, background 0.18s ease-out;
+    }
+
+    .slot-cell-inner {
+      transform: translateY(0);
+      transition: transform 0.1s linear;
+    }
+
+    .slot-cell.win {
+      background: linear-gradient(150deg, #fef3c7, #fde68a);
+      box-shadow:
+        0 0 0 2px rgba(250, 204, 21, 0.9),
+        0 0 18px rgba(245, 158, 11, 0.9);
+    }
+
+    @keyframes reelSpin {
+      0% {
+        transform: translateY(-130%);
+        filter: blur(2px);
+      }
+      30% {
+        transform: translateY(130%);
+        filter: blur(2px);
+      }
+      60% {
+        transform: translateY(-90%);
+        filter: blur(1.5px);
+      }
+      90% {
+        transform: translateY(40%);
+        filter: blur(1px);
+      }
+      100% {
+        transform: translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes winShake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-1px, 1px); }
+      40% { transform: translate(1px, -1px); }
+      60% { transform: translate(-1px, -1px); }
+      80% { transform: translate(1px, 1px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .slot-cell.win .slot-cell-inner {
+      animation:
+        winShake 0.4s linear infinite,
+        winPulse 0.9s ease-in-out infinite alternate;
+    }
+
+    @keyframes winPulse {
+      0% {
+        filter: brightness(1);
+      }
+      100% {
+        filter: brightness(1.3);
+      }
+    }
+
+    .slot-grid-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent 18%, transparent 82%, rgba(248, 250, 252, 0.95)),
+        linear-gradient(to right, rgba(255, 255, 255, 0.6), transparent 24%, transparent 76%, rgba(248, 250, 252, 0.95));
+      mix-blend-mode: screen;
+      z-index: 3;
+    }
+
+    .slot-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(55, 65, 81, 0.95);
+      margin-bottom: 8px;
+    }
+
+    .slot-info-row span strong {
+      color: #1d4ed8;
+    }
+
+    /* CONTROLS */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(55, 65, 81, 0.9);
+    }
+
+    .control-input {
+      display: flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      padding: 2px 8px;
+      gap: 4px;
+      min-width: 110px;
+    }
+
+    .control-input button {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 0;
+      background: radial-gradient(circle at 30% 0, #e5e7eb 0, #cbd5e1 80%);
+      color: #111827;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .control-input span {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: #111827;
+    }
+
+    .btn-spin {
+      min-width: 155px;
+      height: 52px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #111827;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 30% 0, #fee2e2 0, #f97373 25%, #f97316 60%, #be123c 100%);
+      box-shadow:
+        0 10px 22px rgba(248, 113, 113, 0.7),
+        0 0 14px rgba(248, 250, 252, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-spin::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), transparent 40%, transparent 60%, rgba(255, 255, 255, 0.35));
+      mix-blend-mode: screen;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .btn-spin span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-spin[disabled] {
+      opacity: 0.55;
+      cursor: default;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-outline {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: radial-gradient(circle at top, rgba(248, 250, 252, 0.9), rgba(229, 231, 235, 0.95));
+      color: #111827;
+      font-size: 11px;
+      padding: 7px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-outline.gold {
+      border-color: rgba(234, 179, 8, 0.9);
+      color: #92400e;
+    }
+
+    .btn-outline.danger {
+      border-color: rgba(239, 68, 68, 0.9);
+      color: #b91c1c;
+    }
+
+    .btn-outline.small {
+      font-size: 10px;
+      padding: 5px 9px;
+    }
+
+    .btn-outline:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    /* RIGHT SIDEBAR */
+    .side-panel {
+      background: linear-gradient(160deg, #f9fafb 0%, #e5e7eb 40%, #eff6ff 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      padding: 12px 13px 13px;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.9),
+        0 10px 26px rgba(148, 163, 184, 0.7);
+    }
+
+    .side-section {
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.7);
+    }
+
+    .side-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .side-title {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(55, 65, 81, 0.95);
+      margin-bottom: 8px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 3px;
+      color: var(--color-text-soft);
+    }
+
+    .stat-row strong {
+      color: #111827;
+    }
+
+    .hint {
+      font-size: 10px;
+      color: rgba(75, 85, 99, 0.95);
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    .paytable-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 4px 6px;
+      font-size: 10px;
+      color: rgba(55, 65, 81, 0.95);
+    }
+
+    .paytable-grid div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logs {
+      font-size: 10px;
+      color: rgba(55, 65, 81, 0.98);
+      max-height: 110px;
+      overflow-y: auto;
+      padding-right: 4px;
+      line-height: 1.5;
+    }
+
+    .logs p {
+      margin-bottom: 3px;
+    }
+
+    .logs p span {
+      color: #1d4ed8;
+    }
+
+    /* LOGIN OVERLAY (PLAYER) */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(219, 234, 254, 0.96), rgba(148, 163, 184, 0.96));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .login-card {
+      width: min(420px, 100% - 40px);
+      background: linear-gradient(145deg, #eff6ff 0%, #f9fafb 80%);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.55);
+      padding: 18px 20px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-title {
+      font-size: 16px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      color: #1d4ed8;
+    }
+
+    .field-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: rgba(55, 65, 81, 0.96);
+      margin-bottom: 6px;
+    }
+
+    .text-input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      background: rgba(249, 250, 251, 0.98);
+      color: #111827;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 9px 11px;
+      outline: none;
+    }
+
+    .text-input::placeholder {
+      color: rgba(156, 163, 175, 0.9);
+    }
+
+    .login-row {
+      margin-bottom: 10px;
+    }
+
+    .login-btn-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .error-text {
+      font-size: 10px;
+      color: var(--color-danger);
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    .login-hint {
+      font-size: 10px;
+      color: rgba(75, 85, 99, 0.95);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    /* ADMIN OVERLAY */
+    .admin-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(219, 234, 254, 0.96), rgba(148, 163, 184, 0.96));
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 25;
+    }
+
+    .admin-card {
+      width: min(520px, 100% - 40px);
+      background: linear-gradient(145deg, #eff6ff 0%, #f9fafb 80%);
+      border-radius: 18px;
+      border: 1px solid rgba(234, 179, 8, 0.9);
+      box-shadow:
+        0 26px 60px rgba(15, 23, 42, 0.6),
+        0 0 18px rgba(234, 179, 8, 0.85);
+      padding: 18px 20px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .admin-title {
+      font-size: 15px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #92400e;
+      margin-bottom: 8px;
+    }
+
+    .admin-sub {
+      font-size: 10px;
+      color: rgba(55, 65, 81, 0.95);
+      margin-bottom: 10px;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.9);
+      text-align: left;
+    }
+
+    .admin-table th {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+      color: rgba(55, 65, 81, 0.95);
+    }
+
+    .admin-table td {
+      color: rgba(31, 41, 55, 0.98);
+    }
+
+    .admin-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    /* CREDIT MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 25;
+    }
+
+    .modal {
+      width: min(360px, 100% - 40px);
+      background: radial-gradient(circle at top, #eff6ff 0, #f9fafb 90%);
+      border-radius: 18px;
+      border: 1px solid rgba(234, 179, 8, 0.9);
+      box-shadow:
+        0 26px 60px rgba(15, 23, 42, 0.5),
+        0 0 18px rgba(234, 179, 8, 0.85);
+      padding: 14px 16px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .modal-title {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+
+    .modal-sub {
+      font-size: 10px;
+      color: rgba(55, 65, 81, 0.95);
+      margin-bottom: 8px;
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .code-success {
+      font-size: 10px;
+      color: var(--color-success);
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    .code-error {
+      font-size: 10px;
+      color: var(--color-danger);
+      margin-top: 4px;
+      min-height: 14px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: radial-gradient(circle at top, #eff6ff, #e5e7eb);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      padding: 7px 13px;
+      font-size: 11px;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow:
+        0 14px 30px rgba(148, 163, 184, 0.8),
+        0 0 14px rgba(191, 219, 254, 0.9);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+      z-index: 40;
+    }
+
+    .toast.visible {
+      transform: translateX(-50%) translateY(0%);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .toast.bad {
+      border-color: rgba(239, 68, 68, 0.9);
+      box-shadow:
+        0 14px 30px rgba(248, 113, 113, 0.8),
+        0 0 14px rgba(248, 113, 113, 0.9);
+    }
+
+    .toast .dot {
+      width: 8px;
+      height: 8px;
+    }
+
+    @media (max-width: 880px) {
+      .game-body {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .slot-grid {
+        grid-template-columns: repeat(5, minmax(52px, var(--slot-cell-size)));
+        grid-auto-rows: minmax(52px, var(--slot-cell-size));
+      }
+      .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-group {
+        justify-content: space-between;
+      }
+      .btn-spin {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="card">
+      <div class="card-inner">
+        <header class="game-header">
+          <div class="logo-block">
+            <div class="logo-mark"></div>
+            <div>
+              <div class="logo-text-main">FOURTYLOOPS</div>
+              <div class="logo-text-sub">SLOT MACHINE CORE</div>
+            </div>
+          </div>
+          <div class="session-info">
+            <div class="badge">
+              <span class="badge-label">User</span>
+              <span class="badge-value" id="header-username">—</span>
+            </div>
+            <div class="badge">
+              <span class="badge-label">Balance</span>
+              <span class="badge-value" id="header-balance">0</span>
+            </div>
+            <div class="badge-pill">
+              <div class="dot"></div>
+              <span id="header-session-state">Not Authenticated</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="game-body">
+          <!-- SLOT AREA -->
+          <section class="slot-panel">
+            <div class="slot-panel-inner">
+              <div class="slot-header">
+                <div class="slot-header-left">
+                  <div class="slot-title">FourtyLOOPS Slot Machine</div>
+                  <div class="slot-sub">
+                    5x5 • 20 Lines • Scatter Free Spins • x3 Max Multiplier
+                  </div>
+                </div>
+                <div class="status-chip-row">
+                  <div class="status-chip">
+                    <span>Free Spins</span>
+                    <strong id="status-freespins">0</strong>
+                  </div>
+                  <div class="status-chip">
+                    <span>Last Win</span>
+                    <strong id="status-lastwin">0</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LED WIN BANNER -->
+              <div class="win-banner" id="win-banner">
+                <div class="win-banner-dot"></div>
+                <span id="win-banner-text">BIG WIN</span>
+                <div class="win-banner-dot"></div>
+              </div>
+
+              <div class="slot-grid-shell">
+                <div class="slot-grid-shell-inner">
+                  <div class="slot-grid" id="slot-grid">
+                    <!-- cells injected -->
+                  </div>
+                  <div class="slot-grid-overlay"></div>
+                </div>
+              </div>
+
+              <div class="slot-info-row">
+                <span>Bet / Line: <strong id="label-bet-per-line">10</strong> cr</span>
+                <span>Lines: <strong>20</strong></span>
+                <span>RTP (sim): <strong>~96%</strong></span>
+              </div>
+
+              <div class="controls-bar">
+                <div class="controls-group">
+                  <div class="control-field">
+                    <span>Bet Level</span>
+                    <div class="control-input">
+                      <button type="button" id="btn-bet-dec">−</button>
+                      <span id="bet-display">50</span>
+                      <button type="button" id="btn-bet-inc">+</button>
+                    </div>
+                  </div>
+
+                  <div class="control-field">
+                    <span>Auto Spins</span>
+                    <div class="control-input">
+                      <button type="button" id="btn-auto-dec">−</button>
+                      <span id="auto-display">0</span>
+                      <button type="button" id="btn-auto-inc">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-spin" id="btn-spin">
+                  <span>SPIN</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- SIDE PANEL -->
+          <aside class="side-panel">
+            <div class="side-section">
+              <div class="side-title">Session</div>
+              <div class="stat-row">
+                <span>Current User</span>
+                <strong id="side-username">—</strong>
+              </div>
+              <div class="stat-row">
+                <span>Balance</span>
+                <strong id="side-balance">0</strong>
+              </div>
+              <div class="stat-row">
+                <span>Total Spins</span>
+                <strong id="side-spins">0</strong>
+              </div>
+              <div class="stat-row">
+                <span>Total Win</span>
+                <strong id="side-totalwin">0</strong>
+              </div>
+              <div class="stat-row">
+                <span>Max Single Win</span>
+                <strong id="side-maxwin">0</strong>
+              </div>
+              <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn-outline gold small" id="btn-open-code">
+                  Kredi Kodu Gir
+                </button>
+                <button type="button" class="btn-outline danger small" id="btn-logout">
+                  Logout
+                </button>
+              </div>
+              <p class="hint">
+                Kredi yüklemek için yalnızca <strong>Yönetici'den</strong> aldığınız özel kodları kullanabilirsiniz.
+              </p>
+            </div>
+
+            <div class="side-section">
+              <div class="side-title">Paytable</div>
+              <div class="paytable-grid">
+                <div><span>🐉 Dragon (5L)</span><span>x20</span></div>
+                <div><span>💎 Crystal (5L)</span><span>x12</span></div>
+                <div><span>⭐ Star (5L)</span><span>x10</span></div>
+                <div><span>7️⃣ Seven (5L)</span><span>x8</span></div>
+                <div><span>🍒 Cherry (5L)</span><span>x6</span></div>
+                <div><span>🔔 Bell (5L)</span><span>x5</span></div>
+                <div><span>🍀 Lucky (5L)</span><span>x4</span></div>
+                <div><span>💠 Wild</span><span>Substitute</span></div>
+                <div><span>⚡ Scatter</span><span>3+ → 5FS</span></div>
+              </div>
+              <p class="hint">
+                Ödemeler yalnızca <strong>soldan sağa</strong> tam hat eşleşmelerinde geçerlidir (3–5 sembol).
+                Wild her sembol yerine geçer (scatter hariç).
+              </p>
+            </div>
+
+            <div class="side-section">
+              <div class="side-title">
+                Activity Log
+              </div>
+              <div class="logs" id="log-box"></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN OVERLAY (PLAYER) -->
+  <div class="overlay" id="login-overlay">
+    <div class="login-card">
+      <div class="login-card-inner">
+        <div class="login-title">Session Login</div>
+        <div class="login-row">
+          <div class="field-label">Username</div>
+          <input type="text" id="login-username" class="text-input" placeholder="Kullanıcı adınızı yazın" autocomplete="off" />
+          <div class="error-text" id="login-error"></div>
+        </div>
+        <div class="login-btn-row">
+          <button type="button" class="btn-outline gold" id="btn-login">
+            Enter FourtyLOOPS
+          </button>
+        </div>
+        <p class="login-hint">
+          Bu oyun sadece önceden tanımlanmış oyuncu adlarıyla çalışır. Kredi kodları yalnızca Yönetici tarafından verilir.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN OVERLAY -->
+  <div class="admin-overlay" id="admin-overlay">
+    <div class="admin-card">
+      <div class="admin-card-inner">
+        <div class="admin-title">Admin Panel – KingFatih84</div>
+        <div class="admin-sub">
+          Kayıtlı oyuncuların localStorage verilerini görebilir ve isterseniz tüm local datayı temizleyebilirsiniz.
+        </div>
+        <table class="admin-table" id="admin-users-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Balance</th>
+              <th>Total Spins</th>
+              <th>Total Win</th>
+              <th>Used Codes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- doldurulacak -->
+          </tbody>
+        </table>
+        <div class="admin-sub" id="admin-global-stats"></div>
+        <div class="admin-actions">
+          <button type="button" class="btn-outline danger small" id="btn-admin-reset">
+            Tüm Local Datayı Sil
+          </button>
+          <button type="button" class="btn-outline gold small" id="btn-admin-close">
+            Kapat ve Login Ekranına Dön
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDIT CODE MODAL -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+      <div class="modal-inner">
+        <div class="modal-title">Credit Code</div>
+        <div class="modal-sub">
+          Kredi kodunuz 8 karakter (A–Z, 0–9) olmalıdır. Kredi yüklemek için Yönetici'den aldığınız kodu girin.
+        </div>
+        <div class="field-label">Enter Credit Code</div>
+        <input type="text" id="code-input" class="text-input" placeholder="Ör: K7Q9ZL01" />
+        <div class="code-success" id="code-success"></div>
+        <div class="code-error" id="code-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-outline small" id="btn-close-modal">Kapat</button>
+          <button type="button" class="btn-outline gold" id="btn-apply-code">Activate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <div class="dot"></div>
+    <span id="toast-text"></span>
+  </div>
+
+  <script>
+    /***********************
+     *  CONSTANTS & DATA   *
+     ***********************/
+    const ROWS = 5;
+    const COLS = 5;
+
+    const PLAYER_USERS = [
+      "AlexDeSouza",
+      "GheorgheHagi",
+      "DidierDrogba",
+      "RobinVanPersie",
+      "RicardoQuaresma",
+      "MarioGomez",
+      "ToniSchumacher",
+      "NicolasAnelka",
+      "DaniGuiza",
+      "MarioJardel"
+    ];
+
+    const ADMIN_USER = "KingFatih84";
+
+    const LS_PROFILE_PREFIX = "dx_slot_profile_";
+    const LS_GLOBAL_CODES_KEY = "dx_slot_global_codes_v1";
+
+    // Kolay tahmin edilemeyen 8 karakterli kredi kodları üretmek için prefix tabanlı yardımcı
+    function makeCodes(prefix) {
+      const arr = [];
+      for (let i = 1; i <= 50; i++) {
+        const num = String(i).padStart(2, "0");
+        arr.push((prefix + num).toUpperCase());
+      }
+      return arr;
+    }
+
+    // Her kullanıcı için 50'şer adet, 8 karakterli, rastgele görünen prefix + 01–50
+    const CREDIT_CODES = {
+      AlexDeSouza:     makeCodes("K7Q9ZL"),
+      GheorgheHagi:    makeCodes("P4M2XR"),
+      DidierDrogba:    makeCodes("N8V5TC"),
+      RobinVanPersie:  makeCodes("B3G7YD"),
+      RicardoQuaresma: makeCodes("R9H4WK"),
+      MarioGomez:      makeCodes("L6S8QP"),
+      ToniSchumacher:  makeCodes("C2J5VF"),
+      NicolasAnelka:   makeCodes("D5K7ZM"),
+      DaniGuiza:       makeCodes("H8L3RN"),
+      MarioJardel:     makeCodes("S1P9WX")
+    };
+
+    // Güvenlik için filtre (zaten A–Z / 0–9 ama format korunmuş olur)
+    Object.keys(CREDIT_CODES).forEach((k) => {
+      CREDIT_CODES[k] = CREDIT_CODES[k].map((code) =>
+        code.replace(/[^A-Z0-9]/g, "X")
+      );
+    });
+
+    // Slot sembolleri ve ödeme tabloları
+    const SYMBOLS = [
+      { id: "DRAGON",  icon: "🐉", weight: 1, pays: { 3: 4,  4: 10, 5: 20 } },
+      { id: "CRYSTAL", icon: "💎", weight: 2, pays: { 3: 3,  4: 7,  5: 12 } },
+      { id: "STAR",    icon: "⭐",  weight: 3, pays: { 3: 2.5,4: 5.5,5: 10 } },
+      { id: "SEVEN",   icon: "7️⃣", weight: 4, pays: { 3: 2,  4: 4.5,5: 8  } },
+      { id: "CHERRY",  icon: "🍒", weight: 5, pays: { 3: 1.6,4: 3.2,5: 6  } },
+      { id: "BELL",    icon: "🔔", weight: 6, pays: { 3: 1.4,4: 2.8,5: 5  } },
+      { id: "LUCKY",   icon: "🍀", weight: 7, pays: { 3: 1.2,4: 2.4,5: 4  } },
+      { id: "WILD",    icon: "💠", weight: 1, pays: { 3: 3,  4: 8,  5: 16 }, isWild: true },
+      { id: "SCATTER", icon: "⚡",  weight: 1, pays: {},              isScatter: true }
+    ];
+
+    // 5x5, 20 line
+    const PAY_LINES = (() => {
+      const patterns = [
+        [2, 2, 2, 2, 2],
+        [1, 1, 1, 1, 1],
+        [3, 3, 3, 3, 3],
+        [0, 0, 0, 0, 0],
+        [4, 4, 4, 4, 4],
+        [0, 1, 2, 3, 4],
+        [4, 3, 2, 1, 0],
+        [1, 2, 3, 2, 1],
+        [3, 2, 1, 2, 3],
+        [0, 0, 1, 0, 0],
+        [4, 4, 3, 4, 4],
+        [2, 3, 4, 3, 2],
+        [2, 1, 0, 1, 2],
+        [1, 0, 1, 2, 3],
+        [3, 4, 3, 2, 1],
+        [0, 1, 1, 1, 2],
+        [4, 3, 3, 3, 2],
+        [1, 2, 2, 2, 3],
+        [3, 2, 2, 2, 1],
+        [0, 2, 4, 2, 0]
+      ];
+      return patterns.map((rows) =>
+        rows.map((r, c) => [r, c])
+      );
+    })();
+
+    const BET_LEVELS = [20, 50, 100, 200, 500];
+    const FREE_SPINS_PER_TRIGGER = 5;
+
+    /***********************
+     *  STATE              *
+     ***********************/
+    let currentUser = null;
+    let profile = null;
+    let globalUsedCodes = [];
+    let grid = [];
+    let spinning = false;
+    let autoSpinsLeft = 0;
+    let freeSpinsLeft = 0;
+    let currentBet = BET_LEVELS[1];
+    let totalSpins = 0;
+    let totalWin = 0;
+    let maxWin = 0;
+    let winBannerTimeout = null;
+
+    /***********************
+     *  UTILITIES          *
+     ***********************/
+    function log(msg, highlight) {
+      const box = document.getElementById("log-box");
+      if (!box) return;
+      const p = document.createElement("p");
+      p.innerHTML = highlight ? `<span>${msg}</span>` : msg;
+      box.prepend(p);
+    }
+
+    function showToast(text, isBad) {
+      const toast = document.getElementById("toast");
+      const span = document.getElementById("toast-text");
+      span.textContent = text;
+      if (isBad) {
+        toast.classList.add("bad");
+      } else {
+        toast.classList.remove("bad");
+      }
+      toast.classList.add("visible");
+      setTimeout(() => {
+        toast.classList.remove("visible");
+      }, 2300);
+    }
+
+    function showWinBanner(type, text) {
+      const banner = document.getElementById("win-banner");
+      const label = document.getElementById("win-banner-text");
+      if (!banner || !label) return;
+
+      banner.classList.remove("visible", "mega", "ultra", "freespin");
+
+      if (type === "mega") banner.classList.add("mega");
+      if (type === "ultra") banner.classList.add("ultra");
+      if (type === "freespin") banner.classList.add("freespin");
+
+      label.textContent = text;
+      banner.classList.add("visible");
+
+      if (winBannerTimeout) {
+        clearTimeout(winBannerTimeout);
+      }
+      winBannerTimeout = setTimeout(() => {
+        banner.classList.remove("visible");
+      }, 2600);
+    }
+
+    function saveProfileToLS() {
+      if (!currentUser || !profile) return;
+      const key = LS_PROFILE_PREFIX + currentUser;
+      profile.totalSpins = totalSpins;
+      profile.totalWin = totalWin;
+      profile.maxWin = maxWin;
+      localStorage.setItem(key, JSON.stringify(profile));
+      localStorage.setItem(LS_GLOBAL_CODES_KEY, JSON.stringify(globalUsedCodes));
+    }
+
+    function loadProfileFromLS(username) {
+      const key = LS_PROFILE_PREFIX + username;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    function loadGlobalCodesFromLS() {
+      const raw = localStorage.getItem(LS_GLOBAL_CODES_KEY);
+      if (!raw) return [];
+      try {
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function hardResetAllData() {
+      PLAYER_USERS.forEach((u) => {
+        localStorage.removeItem(LS_PROFILE_PREFIX + u);
+      });
+      localStorage.removeItem(LS_GLOBAL_CODES_KEY);
+      globalUsedCodes = [];
+    }
+
+    function updateHeaderAndSide() {
+      const uname = currentUser || "—";
+      const bal = profile ? profile.balance : 0;
+
+      document.getElementById("header-username").textContent = uname;
+      document.getElementById("header-balance").textContent = bal;
+      document.getElementById("side-username").textContent = uname;
+      document.getElementById("side-balance").textContent = bal;
+      document.getElementById("header-session-state").textContent = currentUser
+        ? "Session Active"
+        : "Not Authenticated";
+
+      document.getElementById("side-spins").textContent = totalSpins;
+      document.getElementById("side-totalwin").textContent = totalWin;
+      document.getElementById("side-maxwin").textContent = maxWin;
+
+      document.getElementById("label-bet-per-line").textContent = Math.round(currentBet / PAY_LINES.length);
+    }
+
+    function initGridDom() {
+      const gridContainer = document.getElementById("slot-grid");
+      gridContainer.innerHTML = "";
+      grid = [];
+      for (let r = 0; r < ROWS; r++) {
+        const row = [];
+        for (let c = 0; c < COLS; c++) {
+          const symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+          row.push(symbol.id);
+          const cell = document.createElement("div");
+          cell.className = "slot-cell";
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          const inner = document.createElement("div");
+          inner.className = "slot-cell-inner";
+          inner.textContent = symbol.icon;
+          cell.appendChild(inner);
+          gridContainer.appendChild(cell);
+        }
+        grid.push(row);
+      }
+    }
+
+    function weightedRandomSymbol() {
+      const totalWeight = SYMBOLS.reduce((sum, s) => sum + s.weight, 0);
+      const rnd = Math.random() * totalWeight;
+      let acc = 0;
+      for (let i = 0; i < SYMBOLS.length; i++) {
+        acc += SYMBOLS[i].weight;
+        if (rnd <= acc) return SYMBOLS[i];
+      }
+      return SYMBOLS[SYMBOLS.length - 1];
+    }
+
+    function renderGrid() {
+      const cells = document.querySelectorAll(".slot-cell");
+      cells.forEach((cell) => {
+        const r = parseInt(cell.dataset.row, 10);
+        const c = parseInt(cell.dataset.col, 10);
+        const symbolId = grid[r][c];
+        const symbol = SYMBOLS.find((s) => s.id === symbolId);
+        const inner = cell.querySelector(".slot-cell-inner");
+        inner.textContent = symbol ? symbol.icon : "?";
+        cell.classList.remove("win");
+      });
+    }
+
+    function clearWinHighlights() {
+      const cells = document.querySelectorAll(".slot-cell");
+      cells.forEach((cell) => {
+        cell.classList.remove("win");
+      });
+    }
+
+    function findSymbolById(id) {
+      return SYMBOLS.find((s) => s.id === id);
+    }
+
+    function evaluateSpinAndHighlight(effectiveBet) {
+      let totalWinAmount = 0;
+      let scatterCount = 0;
+      const winningCells = [];
+      const detailedWins = [];
+
+      const betPerLine = effectiveBet / PAY_LINES.length;
+
+      // Scatter sayımı
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const symId = grid[r][c];
+          const sym = findSymbolById(symId);
+          if (sym && sym.isScatter) scatterCount++;
+        }
+      }
+
+      // Hat değerlendirme
+      PAY_LINES.forEach((line, lineIndex) => {
+        let baseSymbolId = null;
+        let matchCount = 0;
+        const lineCells = [];
+
+        for (let i = 0; i < line.length; i++) {
+          const [r, c] = line[i];
+          const symId = grid[r][c];
+          const sym = findSymbolById(symId);
+          if (sym && sym.isScatter) {
+            break;
+          }
+
+          if (!baseSymbolId) {
+            baseSymbolId = symId;
+          }
+
+          const baseSym = findSymbolById(baseSymbolId);
+          const isWild = sym && sym.isWild;
+          const isSame = symId === baseSymbolId;
+          const baseIsWild = baseSym && baseSym.isWild;
+
+          if (isSame || isWild || baseIsWild) {
+            matchCount++;
+            lineCells.push({ r, c });
+          } else {
+            break;
+          }
+        }
+
+        if (matchCount >= 3 && baseSymbolId) {
+          const paySym = findSymbolById(baseSymbolId);
+          if (paySym && paySym.pays[matchCount]) {
+            const basePayout = paySym.pays[matchCount];
+            const lineWin = basePayout * betPerLine;
+            totalWinAmount += lineWin;
+            lineCells.forEach((cell) => winningCells.push(cell));
+            detailedWins.push({
+              lineIndex,
+              symbolId: paySym.id,
+              matchCount,
+              lineWin
+            });
+          }
+        }
+      });
+
+      // Hücreleri highlight et
+      const cells = document.querySelectorAll(".slot-cell");
+      winningCells.forEach((pos) => {
+        cells.forEach((cell) => {
+          const r = parseInt(cell.dataset.row, 10);
+          const c = parseInt(cell.dataset.col, 10);
+          if (r === pos.r && c === pos.c) {
+            cell.classList.add("win");
+          }
+        });
+      });
+
+      let addedFreeSpins = 0;
+      if (scatterCount >= 3) {
+        addedFreeSpins = FREE_SPINS_PER_TRIGGER;
+        freeSpinsLeft += addedFreeSpins;
+      }
+
+      return { totalWinAmount, scatterCount, addedFreeSpins, detailedWins };
+    }
+
+    function spinReels(effectiveBet) {
+      clearWinHighlights();
+
+      const inners = document.querySelectorAll(".slot-cell-inner");
+      inners.forEach((inner) => {
+        const col = parseInt(inner.parentElement.dataset.col, 10) || 0;
+        const delay = col * 0.08;
+        const duration = 0.7 + col * 0.03;
+        inner.style.animation = `reelSpin ${duration}s cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}s`;
+      });
+
+      const maxDuration = 0.7 + (COLS - 1) * 0.03 + (COLS - 1) * 0.08;
+
+      setTimeout(() => {
+        inners.forEach((inner) => {
+          inner.style.animation = "none";
+        });
+
+        const {
+          totalWinAmount,
+          scatterCount,
+          addedFreeSpins,
+          detailedWins
+        } = evaluateSpinAndHighlight(effectiveBet);
+
+        const roundedWin = Math.round(totalWinAmount);
+        profile.balance += roundedWin;
+        totalSpins++;
+        totalWin += roundedWin;
+        if (roundedWin > maxWin) maxWin = roundedWin;
+        saveProfileToLS();
+
+        document.getElementById("status-lastwin").textContent = roundedWin;
+        document.getElementById("status-freespins").textContent = freeSpinsLeft;
+        updateHeaderAndSide();
+
+        if (roundedWin > 0) {
+          log(`Total win: ${roundedWin} credit.`, true);
+
+          const ratio = effectiveBet > 0 ? roundedWin / effectiveBet : 0;
+          let label = null;
+          let bannerType = null;
+          if (ratio >= 40) {
+            label = "ULTRA WIN";
+            bannerType = "ultra";
+          } else if (ratio >= 20) {
+            label = "MEGA WIN";
+            bannerType = "mega";
+          } else if (ratio >= 10) {
+            label = "BIG WIN";
+            bannerType = "big";
+          }
+
+          if (label) {
+            const rStr = ratio.toFixed(1);
+            log(`${label}! x${rStr} (${roundedWin} credit).`, true);
+            showToast(`${label}! x${rStr} kazanç.`, false);
+            showWinBanner(
+              bannerType === "big" ? null : bannerType,
+              `${label}  x${rStr}`
+            );
+          }
+
+          detailedWins.forEach((dw) => {
+            const sym = findSymbolById(dw.symbolId);
+            const symName = sym ? sym.icon : dw.symbolId;
+            log(
+              `Line ${dw.lineIndex + 1}: ${symName} x${dw.matchCount} → ${Math.round(
+                dw.lineWin
+              )} credit`,
+              false
+            );
+          });
+        } else {
+          log("No win.", false);
+        }
+
+        if (scatterCount >= 3 && addedFreeSpins > 0) {
+          log(
+            `Scatter Hit! ${scatterCount} scatters → +${addedFreeSpins} Free Spins.`,
+            true
+          );
+          showToast(
+            `Scatter! +${addedFreeSpins} Free Spin eklendi.`,
+            false
+          );
+          showWinBanner(
+            "freespin",
+            `+${addedFreeSpins} FREE SPINS`
+          );
+        }
+
+        spinning = false;
+        if (autoSpinsLeft > 0 || freeSpinsLeft > 0) {
+          requestSpin();
+        }
+      }, maxDuration * 1000 + 80);
+    }
+
+    /***********************
+     *  CREDIT CODES       *
+     ***********************/
+    function openCreditModal() {
+      if (!currentUser) {
+        showToast("Önce giriş yap.", true);
+        return;
+      }
+      document.getElementById("modal-backdrop").style.display = "flex";
+      document.getElementById("code-input").value = "";
+      document.getElementById("code-success").textContent = "";
+      document.getElementById("code-error").textContent = "";
+      document.getElementById("code-input").focus();
+    }
+
+    function closeCreditModal() {
+      document.getElementById("modal-backdrop").style.display = "none";
+    }
+
+    function applyCreditCode() {
+      if (!currentUser || !profile) {
+        showToast("Önce giriş yap.", true);
+        return;
+      }
+      const raw = document.getElementById("code-input").value.trim();
+      const successBox = document.getElementById("code-success");
+      const errorBox = document.getElementById("code-error");
+      successBox.textContent = "";
+      errorBox.textContent = "";
+
+      if (!raw) {
+        errorBox.textContent = "Kod boş olamaz.";
+        return;
+      }
+      const code = raw.toUpperCase();
+      if (!/^[A-Z0-9]{8}$/.test(code)) {
+        errorBox.textContent = "Kod formatı hatalı. 8 karakter, A–Z ve 0–9 olmalı.";
+        return;
+      }
+
+      const validCodesForUser = CREDIT_CODES[currentUser] || [];
+      if (validCodesForUser.indexOf(code) === -1) {
+        errorBox.textContent = "Bu kullanıcı için geçerli bir kod değil.";
+        return;
+      }
+
+      if (profile.usedCodes && profile.usedCodes.indexOf(code) !== -1) {
+        errorBox.textContent = "Bu kodu zaten kullandın.";
+        return;
+      }
+
+      if (globalUsedCodes.indexOf(code) !== -1) {
+        errorBox.textContent =
+          "Kod global olarak daha önce kullanılmış. Yeniden kullanılamaz.";
+        return;
+      }
+
+      const CREDIT_AMOUNT = 1000;
+      profile.balance += CREDIT_AMOUNT;
+      if (!Array.isArray(profile.usedCodes)) profile.usedCodes = [];
+      profile.usedCodes.push(code);
+      globalUsedCodes.push(code);
+      saveProfileToLS();
+      updateHeaderAndSide();
+
+      successBox.textContent = `Kredi yüklendi.`;
+      log(`Credit code used → +${CREDIT_AMOUNT} (code: ${code})`, true);
+      showToast(`Kredi kodu kabul edildi.`, false);
+    }
+
+    /***********************
+     *  ADMIN PANEL        *
+     ***********************/
+    function openAdminOverlay() {
+      const overlay = document.getElementById("admin-overlay");
+      const tbody = document.querySelector("#admin-users-table tbody");
+      const globalStatsBox = document.getElementById("admin-global-stats");
+
+      tbody.innerHTML = "";
+      let playersWithProfile = 0;
+      let totalGlobalBalance = 0;
+      let totalGlobalSpins = 0;
+      let totalGlobalWin = 0;
+      let totalUsedCodes = 0;
+
+      PLAYER_USERS.forEach((uname) => {
+        const p = loadProfileFromLS(uname);
+        if (!p) return;
+        playersWithProfile++;
+        const balance = p.balance || 0;
+        const tSpins = p.totalSpins || 0;
+        const tWin = p.totalWin || 0;
+        const usedCount = Array.isArray(p.usedCodes) ? p.usedCodes.length : 0;
+
+        totalGlobalBalance += balance;
+        totalGlobalSpins += tSpins;
+        totalGlobalWin += tWin;
+        totalUsedCodes += usedCount;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${uname}</td>
+          <td>${balance}</td>
+          <td>${tSpins}</td>
+          <td>${tWin}</td>
+          <td>${usedCount}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      globalStatsBox.textContent =
+        `Toplam aktif profil: ${playersWithProfile} | Global Bakiye: ${totalGlobalBalance} | ` +
+        `Toplam Spins: ${totalGlobalSpins} | Toplam Win: ${totalGlobalWin} | Kullanılan kod sayısı: ${totalUsedCodes}`;
+
+      overlay.style.display = "flex";
+    }
+
+    function closeAdminOverlay() {
+      const overlay = document.getElementById("admin-overlay");
+      overlay.style.display = "none";
+      document.getElementById("login-overlay").classList.remove("hidden");
+    }
+
+    /***********************
+     *  LOGIN              *
+     ***********************/
+    function doLogin() {
+      const input = document.getElementById("login-username");
+      const error = document.getElementById("login-error");
+      const usernameRaw = input.value.trim();
+      error.textContent = "";
+
+      if (!usernameRaw) {
+        error.textContent = "Kullanıcı adı boş olamaz.";
+        return;
+      }
+
+      const normalized = usernameRaw.replace(/\s+/g, "");
+
+      if (normalized.toLowerCase() === ADMIN_USER.toLowerCase()) {
+        document.getElementById("login-overlay").classList.add("hidden");
+        openAdminOverlay();
+        return;
+      }
+
+      const exactMatch = PLAYER_USERS.find(
+        (u) => u.toLowerCase() === normalized.toLowerCase()
+      );
+      if (!exactMatch) {
+        error.textContent = "Geçersiz kullanıcı adı.";
+        return;
+      }
+
+      currentUser = exactMatch;
+      profile = loadProfileFromLS(currentUser);
+      if (!profile) {
+        profile = {
+          username: currentUser,
+          balance: 500,
+          usedCodes: [],
+          totalSpins: 0,
+          totalWin: 0,
+          maxWin: 0
+        };
+      }
+
+      globalUsedCodes = loadGlobalCodesFromLS();
+
+      totalSpins = profile.totalSpins || 0;
+      totalWin = profile.totalWin || 0;
+      maxWin = profile.maxWin || 0;
+
+      updateHeaderAndSide();
+      document.getElementById("header-session-state").textContent = "Session Active";
+
+      document.getElementById("login-overlay").classList.add("hidden");
+      log(`Session opened for ${currentUser}.`, true);
+      if (profile && profile.totalSpins === 0) {
+        showToast(`Hoş geldin, ${currentUser}. Başlangıç bakiyen: 500`, false);
+      } else {
+        showToast(`Tekrar hoş geldin, ${currentUser}.`, false);
+      }
+    }
+
+    function doLogout() {
+      if (!currentUser) return;
+      autoSpinsLeft = 0;
+      freeSpinsLeft = 0;
+      document.getElementById("auto-display").textContent = "0";
+      document.getElementById("status-freespins").textContent = "0";
+      document.getElementById("status-lastwin").textContent = "0";
+
+      if (profile) {
+        saveProfileToLS();
+      }
+
+      currentUser = null;
+      profile = null;
+      totalSpins = 0;
+      totalWin = 0;
+      maxWin = 0;
+      updateHeaderAndSide();
+      document.getElementById("login-overlay").classList.remove("hidden");
+      showToast("Çıkış yapıldı.", false);
+    }
+
+    /***********************
+     *  SPIN REQUEST       *
+     ***********************/
+    function requestSpin() {
+      if (!currentUser || !profile) {
+        showToast("Önce giriş yap.", true);
+        return;
+      }
+      if (spinning) return;
+
+      const effectiveBet = currentBet;
+      const isFreeSpin = freeSpinsLeft > 0;
+
+      if (!isFreeSpin && profile.balance < effectiveBet) {
+        autoSpinsLeft = 0;
+        document.getElementById("auto-display").textContent = "0";
+        showToast("Yetersiz bakiye.", true);
+        return;
+      }
+
+      spinning = true;
+
+      // Yeni kombinasyonu spin'den önce üret
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const sym = weightedRandomSymbol();
+          grid[r][c] = sym.id;
+        }
+      }
+      renderGrid();
+
+      if (isFreeSpin) {
+        freeSpinsLeft--;
+        document.getElementById("status-freespins").textContent = freeSpinsLeft;
+        log("Free Spin played (no balance deducted).", false);
+      } else {
+        profile.balance -= effectiveBet;
+        saveProfileToLS();
+        updateHeaderAndSide();
+      }
+
+      if (autoSpinsLeft > 0 && !isFreeSpin) {
+        autoSpinsLeft--;
+        document.getElementById("auto-display").textContent = autoSpinsLeft;
+      }
+
+      spinReels(effectiveBet);
+    }
+
+    /***********************
+     *  EVENTS             *
+     ***********************/
+    document.addEventListener("DOMContentLoaded", () => {
+      initGridDom();
+      renderGrid();
+
+      document.getElementById("btn-login").addEventListener("click", doLogin);
+      document
+        .getElementById("login-username")
+        .addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            doLogin();
+          }
+        });
+
+      document.getElementById("btn-logout").addEventListener("click", doLogout);
+
+      document
+        .getElementById("btn-open-code")
+        .addEventListener("click", openCreditModal);
+      document
+        .getElementById("btn-close-modal")
+        .addEventListener("click", closeCreditModal);
+      document
+        .getElementById("btn-apply-code")
+        .addEventListener("click", applyCreditCode);
+
+      document.getElementById("btn-spin").addEventListener("click", () => {
+        requestSpin();
+      });
+
+      document
+        .getElementById("btn-bet-dec")
+        .addEventListener("click", () => {
+          const idx = BET_LEVELS.indexOf(currentBet);
+          if (idx > 0) {
+            currentBet = BET_LEVELS[idx - 1];
+            document.getElementById("bet-display").textContent = currentBet;
+            updateHeaderAndSide();
+          }
+        });
+
+      document
+        .getElementById("btn-bet-inc")
+        .addEventListener("click", () => {
+          const idx = BET_LEVELS.indexOf(currentBet);
+          if (idx < BET_LEVELS.length - 1) {
+            currentBet = BET_LEVELS[idx + 1];
+            document.getElementById("bet-display").textContent = currentBet;
+            updateHeaderAndSide();
+          }
+        });
+
+      document
+        .getElementById("btn-auto-dec")
+        .addEventListener("click", () => {
+          if (autoSpinsLeft > 0) {
+            autoSpinsLeft--;
+            document.getElementById("auto-display").textContent = autoSpinsLeft;
+          }
+        });
+
+      document
+        .getElementById("btn-auto-inc")
+        .addEventListener("click", () => {
+          autoSpinsLeft++;
+          document.getElementById("auto-display").textContent = autoSpinsLeft;
+        });
+
+      document
+        .getElementById("btn-admin-close")
+        .addEventListener("click", closeAdminOverlay);
+
+      document
+        .getElementById("btn-admin-reset")
+        .addEventListener("click", () => {
+          if (
+            confirm(
+              "Tüm oyuncu profilleri ve global kod kullanımları silinecek. Emin misiniz?"
+            )
+          ) {
+            hardResetAllData();
+            showToast("Tüm local veriler silindi.", false);
+            closeAdminOverlay();
+          }
+        });
+
+      updateHeaderAndSide();
+    });
+  </script>
+</body>
+</html>
