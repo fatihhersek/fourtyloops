@@ -1256,15 +1256,16 @@
   </div>
 
   <script>
-    /***********************
-     *  CONSTANTS & DATA   *
-     ***********************/
-    const ROWS = 5;
-    const COLS = 5;
+  <script>
+  /***********************
+   *  CONSTANTS & DATA   *
+   ***********************/
+  const ROWS = 5;
+  const COLS = 5;
 
-    const ADMIN_USER = "KingFatih84";
+  const ADMIN_USER = "KingFatih84";
 
-    // Maskeli kullanıcı & kredi verisi için alt yapı
+  // Maskeli kullanıcı & kredi verisi için alt yapı
   const fourtyData = {
     users: [
       "ALEXDESOUZA",
@@ -1350,12 +1351,15 @@
     }
   };
 
-  // Maskeli base64 string:
+  // Runtime’da base64’e çeviriyoruz (masked string)
   window.__FOURTYLOOPS_MASKED_DATA__ = btoa(JSON.stringify(fourtyData));
-    let PLAYER_USERS = [];
-    let CREDIT_CODES = {};
-    const LS_PROFILE_PREFIX = "dx_slot_profile_";
-    const LS_GLOBAL_CODES_KEY = "dx_slot_global_codes_v1";
+
+  let PLAYER_USERS = [];
+  let CREDIT_CODES = {};
+  const LS_PROFILE_PREFIX = "dx_slot_profile_";
+  const LS_GLOBAL_CODES_KEY = "dx_slot_global_codes_v1";
+
+  // ... senin diğer JS kodun burada devam ediyor ...
 
     function initMaskedPlayerData() {
       try {
