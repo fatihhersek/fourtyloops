@@ -195,6 +195,11 @@
       padding: 10px 10px 14px;
       position: relative;
       overflow: hidden;
+      transition: background 0.25s ease;
+    }
+
+    .slot-panel.freespin-mode {
+      background: linear-gradient(155deg, #fef9c3 0%, #fef3c7 45%, #fffbeb 100%);
     }
 
     .slot-panel-inner {
@@ -439,17 +444,6 @@
       100% { filter: brightness(1.3); }
     }
 
-    .slot-grid-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.8), transparent 18%, transparent 82%, rgba(248, 250, 252, 0.95)),
-        linear-gradient(to right, rgba(255, 255, 255, 0.6), transparent 24%, transparent 76%, rgba(248, 250, 252, 0.95));
-      mix-blend-mode: screen;
-      z-index: 3;
-    }
-
     .slot-info-row {
       display: flex;
       justify-content: space-between;
@@ -577,6 +571,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     }
 
     .btn-outline.gold {
@@ -592,6 +587,12 @@
     .btn-outline.small {
       font-size: 10px;
       padding: 5px 9px;
+    }
+
+    .btn-outline.active {
+      background: radial-gradient(circle at top, #fee2e2, #fecaca);
+      border-color: rgba(248, 113, 113, 0.9);
+      box-shadow: 0 0 12px rgba(248, 113, 113, 0.8);
     }
 
     .btn-outline:disabled {
@@ -1026,13 +1027,13 @@
 
         <div class="game-body">
           <!-- SLOT AREA -->
-          <section class="slot-panel">
+          <section class="slot-panel" id="slot-panel">
             <div class="slot-panel-inner">
               <div class="slot-header">
                 <div class="slot-header-left">
                   <div class="slot-title">FourtyLOOPS Slot Machine</div>
                   <div class="slot-sub">
-                    5x5 • 20 Lines • Scatter Free Spins • x3 Max Multiplier
+                    5x5 • 20 Lines • Scatter Free Spins • Jackpot
                   </div>
                 </div>
                 <div class="status-chip-row">
@@ -1059,7 +1060,6 @@
                   <div class="slot-grid" id="slot-grid">
                     <!-- cells injected -->
                   </div>
-                  <div class="slot-grid-overlay"></div>
                 </div>
               </div>
 
@@ -1087,6 +1087,13 @@
                       <span id="auto-display">0</span>
                       <button type="button" id="btn-auto-inc">+</button>
                     </div>
+                  </div>
+
+                  <div class="control-field">
+                    <span>∞ Auto</span>
+                    <button type="button" class="btn-outline small" id="btn-auto-infinite">
+                      ∞ Auto
+                    </button>
                   </div>
                 </div>
 
@@ -1135,7 +1142,7 @@
             </div>
 
             <div class="side-section">
-              <div class="side-title">Paytable</div>
+              <div class="side-title">Paytable & Jackpot</div>
               <div class="paytable-grid">
                 <div><span>🐉 Dragon (5L)</span><span>x20</span></div>
                 <div><span>💎 Crystal (5L)</span><span>x12</span></div>
@@ -1149,7 +1156,7 @@
               </div>
               <p class="hint">
                 Ödemeler yalnızca <strong>soldan sağa</strong> tam hat eşleşmelerinde geçerlidir (3–5 sembol).
-                Wild her sembol yerine geçer (scatter hariç).
+                Wild her sembol yerine geçer (scatter hariç). Tüm ekran tek sembol olursa JACKPOT öder.
               </p>
             </div>
 
@@ -1255,51 +1262,35 @@
     const ROWS = 5;
     const COLS = 5;
 
-    const PLAYER_USERS = [
-      "AlexDeSouza",
-      "GheorgheHagi",
-      "DidierDrogba",
-      "RobinVanPersie",
-      "RicardoQuaresma",
-      "MarioGomez",
-      "ToniSchumacher",
-      "NicolasAnelka",
-      "DaniGuiza",
-      "MarioJardel"
-    ];
-
     const ADMIN_USER = "KingFatih84";
 
+    // Maskeli kullanıcı & kredi verisi için alt yapı
+    // window.__FOURTYLOOPS_MASKED_DATA__ değişkeni, base64 JSON içerecek:
+    // { "users": [...], "codes": { "UserName": ["CODE1", ...] } }
+    let PLAYER_USERS = [];
+    let CREDIT_CODES = {};
     const LS_PROFILE_PREFIX = "dx_slot_profile_";
     const LS_GLOBAL_CODES_KEY = "dx_slot_global_codes_v1";
 
-    function makeCodes(prefix) {
-      const arr = [];
-      for (let i = 1; i <= 50; i++) {
-        const num = String(i).padStart(2, "0");
-        arr.push((prefix + num).toUpperCase());
+    function initMaskedPlayerData() {
+      try {
+        const masked = window.__FOURTYLOOPS_MASKED_DATA__;
+        if (typeof masked === "string" && masked.length > 0) {
+          const decodedStr = atob(masked);
+          const obj = JSON.parse(decodedStr);
+          if (obj && Array.isArray(obj.users) && obj.codes && typeof obj.codes === "object") {
+            PLAYER_USERS = obj.users;
+            CREDIT_CODES = obj.codes;
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Masked player data parse error:", e);
       }
-      return arr;
+      // Fallback demo data – kendi maskeli verini ekleyince bunu istersen kaldır
+      PLAYER_USERS = ["DemoPlayer"];
+      CREDIT_CODES = { DemoPlayer: [] };
     }
-
-    const CREDIT_CODES = {
-      AlexDeSouza:     makeCodes("K7Q9ZL"),
-      GheorgheHagi:    makeCodes("P4M2XR"),
-      DidierDrogba:    makeCodes("N8V5TC"),
-      RobinVanPersie:  makeCodes("B3G7YD"),
-      RicardoQuaresma: makeCodes("R9H4WK"),
-      MarioGomez:      makeCodes("L6S8QP"),
-      ToniSchumacher:  makeCodes("C2J5VF"),
-      NicolasAnelka:   makeCodes("D5K7ZM"),
-      DaniGuiza:       makeCodes("H8L3RN"),
-      MarioJardel:     makeCodes("S1P9WX")
-    };
-
-    Object.keys(CREDIT_CODES).forEach((k) => {
-      CREDIT_CODES[k] = CREDIT_CODES[k].map((code) =>
-        code.replace(/[^A-Z0-9]/g, "X")
-      );
-    });
 
     const SYMBOLS = [
       { id: "DRAGON",  icon: "🐉", weight: 1, pays: { 3: 4,  4: 10, 5: 20 } },
@@ -1312,6 +1303,19 @@
       { id: "WILD",    icon: "💠", weight: 1, pays: { 3: 3,  4: 8,  5: 16 }, isWild: true },
       { id: "SCATTER", icon: "⚡",  weight: 1, pays: {},              isScatter: true }
     ];
+
+    // Tüm ekran aynı sembol olursa jackpot çarpanları (bet * multiplier)
+    const JACKPOT_MULTIPLIERS = {
+      DRAGON: 500,
+      CRYSTAL: 400,
+      STAR: 300,
+      SEVEN: 250,
+      CHERRY: 200,
+      BELL: 180,
+      LUCKY: 150,
+      WILD: 350,
+      SCATTER: 0
+    };
 
     const PAY_LINES = (() => {
       const patterns = [
@@ -1343,6 +1347,7 @@
 
     const BET_LEVELS = [20, 50, 100, 200, 500];
     const FREE_SPINS_PER_TRIGGER = 5;
+    const FREE_SPIN_MULTIPLIER = 1.15; // Free spin'de %15 fazla kazanç
 
     /***********************
      *  STATE              *
@@ -1353,7 +1358,12 @@
     let grid = [];
     let spinning = false;
     let autoSpinsLeft = 0;
+    let infiniteAuto = false;
+
     let freeSpinsLeft = 0;
+    let freeSpinSessionActive = false;
+    let freeSpinSessionWinTotal = 0;
+
     let currentBet = BET_LEVELS[1];
     let totalSpins = 0;
     let totalWin = 0;
@@ -1527,7 +1537,56 @@
       return SYMBOLS.find((s) => s.id === id);
     }
 
-    function evaluateSpinAndHighlight(effectiveBet) {
+    function updateFreeSpinVisualState() {
+      const panel = document.getElementById("slot-panel");
+      if (!panel) return;
+      if (freeSpinsLeft > 0 || freeSpinSessionActive) {
+        panel.classList.add("freespin-mode");
+      } else {
+        panel.classList.remove("freespin-mode");
+      }
+    }
+
+    function updateInfiniteButtonState() {
+      const btn = document.getElementById("btn-auto-infinite");
+      if (!btn) return;
+      if (infiniteAuto) {
+        btn.classList.add("active");
+        btn.textContent = "∞ ON";
+      } else {
+        btn.classList.remove("active");
+        btn.textContent = "∞ Auto";
+      }
+    }
+
+    /***********************
+     *  JACKPOT DETECTION  *
+     ***********************/
+    function detectJackpot(effectiveBet, isFreeSpin) {
+      const firstId = grid[0][0];
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (grid[r][c] !== firstId) {
+            return { amount: 0, symbolId: null };
+          }
+        }
+      }
+      const mult = JACKPOT_MULTIPLIERS[firstId] || 0;
+      if (mult <= 0) return { amount: 0, symbolId: null };
+      let jackpot = effectiveBet * mult;
+      if (isFreeSpin) {
+        jackpot *= FREE_SPIN_MULTIPLIER;
+      }
+      // Tüm tabloyu kazanmış olarak işaretle
+      const cells = document.querySelectorAll(".slot-cell");
+      cells.forEach((cell) => cell.classList.add("win"));
+      return { amount: jackpot, symbolId: firstId };
+    }
+
+    /***********************
+     *  EVALUATE SPIN      *
+     ***********************/
+    function evaluateSpinAndHighlight(effectiveBet, isFreeSpin) {
       let totalWinAmount = 0;
       let scatterCount = 0;
       const winningCells = [];
@@ -1577,7 +1636,10 @@
           const paySym = findSymbolById(baseSymbolId);
           if (paySym && paySym.pays[matchCount]) {
             const basePayout = paySym.pays[matchCount];
-            const lineWin = basePayout * betPerLine;
+            let lineWin = basePayout * betPerLine;
+            if (isFreeSpin) {
+              lineWin *= FREE_SPIN_MULTIPLIER;
+            }
             totalWinAmount += lineWin;
             lineCells.forEach((cell) => winningCells.push(cell));
             detailedWins.push({
@@ -1604,109 +1666,22 @@
       let addedFreeSpins = 0;
       if (scatterCount >= 3) {
         addedFreeSpins = FREE_SPINS_PER_TRIGGER;
-        freeSpinsLeft += addedFreeSpins;
       }
 
-      return { totalWinAmount, scatterCount, addedFreeSpins, detailedWins };
-    }
+      // JACKPOT kontrolü
+      const jackpotInfo = detectJackpot(effectiveBet, isFreeSpin);
+      if (jackpotInfo.amount > 0) {
+        totalWinAmount += jackpotInfo.amount;
+      }
 
-    function spinReels(effectiveBet) {
-      clearWinHighlights();
-
-      const inners = document.querySelectorAll(".slot-cell-inner");
-      inners.forEach((inner) => {
-        const col = parseInt(inner.parentElement.dataset.col, 10) || 0;
-        const delay = col * 0.08;
-        const duration = 0.7 + col * 0.03;
-        inner.style.animation = `reelSpin ${duration}s cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}s`;
-      });
-
-      const maxDuration = 0.7 + (COLS - 1) * 0.03 + (COLS - 1) * 0.08;
-
-      setTimeout(() => {
-        inners.forEach((inner) => {
-          inner.style.animation = "none";
-        });
-
-        const {
-          totalWinAmount,
-          scatterCount,
-          addedFreeSpins,
-          detailedWins
-        } = evaluateSpinAndHighlight(effectiveBet);
-
-        const roundedWin = Math.round(totalWinAmount);
-        profile.balance += roundedWin;
-        totalSpins++;
-        totalWin += roundedWin;
-        if (roundedWin > maxWin) maxWin = roundedWin;
-        saveProfileToLS();
-
-        document.getElementById("status-lastwin").textContent = roundedWin;
-        document.getElementById("status-freespins").textContent = freeSpinsLeft;
-        updateHeaderAndSide();
-
-        if (roundedWin > 0) {
-          log(`Total win: ${roundedWin} credit.`, true);
-
-          const ratio = effectiveBet > 0 ? roundedWin / effectiveBet : 0;
-          let label = null;
-          let bannerType = null;
-          if (ratio >= 40) {
-            label = "ULTRA WIN";
-            bannerType = "ultra";
-          } else if (ratio >= 20) {
-            label = "MEGA WIN";
-            bannerType = "mega";
-          } else if (ratio >= 10) {
-            label = "BIG WIN";
-            bannerType = "big";
-          }
-
-          if (label) {
-            const rStr = ratio.toFixed(1);
-            log(`${label}! x${rStr} (${roundedWin} credit).`, true);
-            showToast(`${label}! x${rStr} kazanç.`, false);
-            showWinBanner(
-              bannerType === "big" ? null : bannerType,
-              `${label}  x${rStr}`
-            );
-          }
-
-          detailedWins.forEach((dw) => {
-            const sym = findSymbolById(dw.symbolId);
-            const symName = sym ? sym.icon : dw.symbolId;
-            log(
-              `Line ${dw.lineIndex + 1}: ${symName} x${dw.matchCount} → ${Math.round(
-                dw.lineWin
-              )} credit`,
-              false
-            );
-          });
-        } else {
-          log("No win.", false);
-        }
-
-        if (scatterCount >= 3 && addedFreeSpins > 0) {
-          log(
-            `Scatter Hit! ${scatterCount} scatters → +${addedFreeSpins} Free Spins.`,
-            true
-          );
-          showToast(
-            `Scatter! +${addedFreeSpins} Free Spin eklendi.`,
-            false
-          );
-          showWinBanner(
-            "freespin",
-            `+${addedFreeSpins} FREE SPINS`
-          );
-        }
-
-        spinning = false;
-        if (autoSpinsLeft > 0 || freeSpinsLeft > 0) {
-          requestSpin();
-        }
-      }, maxDuration * 1000 + 80);
+      return {
+        totalWinAmount,
+        scatterCount,
+        addedFreeSpins,
+        detailedWins,
+        jackpotAmount: jackpotInfo.amount,
+        jackpotSymbolId: jackpotInfo.symbolId
+      };
     }
 
     /***********************
@@ -1896,10 +1871,15 @@
     function doLogout() {
       if (!currentUser) return;
       autoSpinsLeft = 0;
+      infiniteAuto = false;
+      updateInfiniteButtonState();
+
       freeSpinsLeft = 0;
-      document.getElementById("auto-display").textContent = "0";
+      freeSpinSessionActive = false;
+      freeSpinSessionWinTotal = 0;
       document.getElementById("status-freespins").textContent = "0";
       document.getElementById("status-lastwin").textContent = "0";
+      updateFreeSpinVisualState();
 
       if (profile) {
         saveProfileToLS();
@@ -1916,6 +1896,158 @@
     }
 
     /***********************
+     *  SPIN LOGIC         *
+     ***********************/
+    function spinReels(effectiveBet, isFreeSpin) {
+      clearWinHighlights();
+
+      const inners = document.querySelectorAll(".slot-cell-inner");
+      inners.forEach((inner) => {
+        const col = parseInt(inner.parentElement.dataset.col, 10) || 0;
+        const delay = col * 0.08;
+        const duration = 0.7 + col * 0.03;
+        inner.style.animation = `reelSpin ${duration}s cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}s`;
+      });
+
+      const maxDuration = 0.7 + (COLS - 1) * 0.03 + (COLS - 1) * 0.08;
+
+      setTimeout(() => {
+        inners.forEach((inner) => {
+          inner.style.animation = "none";
+        });
+
+        const {
+          totalWinAmount,
+          scatterCount,
+          addedFreeSpins,
+          detailedWins,
+          jackpotAmount,
+          jackpotSymbolId
+        } = evaluateSpinAndHighlight(effectiveBet, isFreeSpin);
+
+        const roundedWin = Math.round(totalWinAmount);
+        profile.balance += roundedWin;
+        totalSpins++;
+        totalWin += roundedWin;
+        if (roundedWin > maxWin) maxWin = roundedWin;
+        saveProfileToLS();
+
+        document.getElementById("status-lastwin").textContent = roundedWin;
+        document.getElementById("status-freespins").textContent = freeSpinsLeft;
+        updateHeaderAndSide();
+
+        if (isFreeSpin) {
+          freeSpinSessionActive = true;
+          freeSpinSessionWinTotal += roundedWin;
+        }
+
+        if (roundedWin > 0) {
+          log(`Total win: ${roundedWin} credit.`, true);
+
+          const ratio = effectiveBet > 0 ? roundedWin / effectiveBet : 0;
+          let label = null;
+          let bannerType = null;
+          if (ratio >= 40) {
+            label = "ULTRA WIN";
+            bannerType = "ultra";
+          } else if (ratio >= 20) {
+            label = "MEGA WIN";
+            bannerType = "mega";
+          } else if (ratio >= 5) { // BIG WIN 5x'ten başlar
+            label = "BIG WIN";
+            bannerType = "big";
+          }
+
+          if (label) {
+            const rStr = ratio.toFixed(1);
+            log(`${label}! x${rStr} (${roundedWin} credit).`, true);
+            showToast(`${label}! x${rStr} kazanç.`, false);
+            showWinBanner(
+              bannerType === "big" ? null : bannerType,
+              `${label}  x${rStr}`
+            );
+          }
+
+          if (jackpotAmount > 0 && jackpotSymbolId) {
+            const sym = findSymbolById(jackpotSymbolId);
+            const icon = sym ? sym.icon : jackpotSymbolId;
+            log(
+              `JACKPOT! Full screen ${icon} → +${Math.round(jackpotAmount)} credit.`,
+              true
+            );
+            showToast("JACKPOT! Full screen hit.", false);
+            showWinBanner("ultra", "JACKPOT WIN");
+          }
+
+          detailedWins.forEach((dw) => {
+            const sym = findSymbolById(dw.symbolId);
+            const symName = sym ? sym.icon : dw.symbolId;
+            log(
+              `Line ${dw.lineIndex + 1}: ${symName} x${dw.matchCount} → ${Math.round(
+                dw.lineWin
+              )} credit`,
+              false
+            );
+          });
+        } else {
+          log("No win.", false);
+        }
+
+        if (scatterCount >= 3 && addedFreeSpins > 0) {
+          const wasInFS = freeSpinsLeft > 0 || isFreeSpin || freeSpinSessionActive;
+          freeSpinsLeft += addedFreeSpins;
+          document.getElementById("status-freespins").textContent = freeSpinsLeft;
+
+          if (!wasInFS) {
+            freeSpinSessionActive = true;
+            freeSpinSessionWinTotal = 0;
+          }
+
+          log(
+            `Scatter Hit! ${scatterCount} scatters → +${addedFreeSpins} Free Spins.`,
+            true
+          );
+          showToast(
+            `Scatter! +${addedFreeSpins} Free Spin eklendi.`,
+            false
+          );
+          showWinBanner(
+            "freespin",
+            `+${addedFreeSpins} FREE SPINS`
+          );
+        }
+
+        updateFreeSpinVisualState();
+
+        // Free spin serisi bittiyse toplam kazancı göster
+        if (isFreeSpin && freeSpinsLeft === 0 && freeSpinSessionActive) {
+          if (freeSpinSessionWinTotal > 0) {
+            log(
+              `FREE SPINS TOTAL WIN: ${freeSpinSessionWinTotal} credit.`,
+              true
+            );
+            showToast(
+              `Free Spins total win: ${freeSpinSessionWinTotal}`,
+              false
+            );
+            showWinBanner(
+              "freespin",
+              `TOTAL FREE WIN ${freeSpinSessionWinTotal}`
+            );
+          }
+          freeSpinSessionActive = false;
+          freeSpinSessionWinTotal = 0;
+          updateFreeSpinVisualState();
+        }
+
+        spinning = false;
+        if (autoSpinsLeft > 0 || freeSpinsLeft > 0 || infiniteAuto) {
+          requestSpin();
+        }
+      }, maxDuration * 1000 + 80);
+    }
+
+    /***********************
      *  SPIN REQUEST       *
      ***********************/
     function requestSpin() {
@@ -1925,11 +2057,13 @@
       }
       if (spinning) return;
 
-      const effectiveBet = currentBet;
       const isFreeSpin = freeSpinsLeft > 0;
 
+      const effectiveBet = currentBet;
       if (!isFreeSpin && profile.balance < effectiveBet) {
         autoSpinsLeft = 0;
+        infiniteAuto = false;
+        updateInfiniteButtonState();
         document.getElementById("auto-display").textContent = "0";
         showToast("Yetersiz bakiye.", true);
         return;
@@ -1960,15 +2094,21 @@
         document.getElementById("auto-display").textContent = autoSpinsLeft;
       }
 
-      spinReels(effectiveBet);
+      updateFreeSpinVisualState();
+
+      spinReels(effectiveBet, isFreeSpin);
     }
 
     /***********************
      *  EVENTS             *
      ***********************/
     document.addEventListener("DOMContentLoaded", () => {
+      initMaskedPlayerData();
       initGridDom();
       renderGrid();
+      updateInfiniteButtonState();
+      updateFreeSpinVisualState();
+      updateHeaderAndSide();
 
       document.getElementById("btn-login").addEventListener("click", doLogin);
       document
@@ -2034,6 +2174,16 @@
         });
 
       document
+        .getElementById("btn-auto-infinite")
+        .addEventListener("click", () => {
+          infiniteAuto = !infiniteAuto;
+          updateInfiniteButtonState();
+          if (infiniteAuto && !spinning) {
+            requestSpin();
+          }
+        });
+
+      document
         .getElementById("btn-admin-close")
         .addEventListener("click", closeAdminOverlay);
 
@@ -2050,9 +2200,36 @@
             closeAdminOverlay();
           }
         });
-
-      updateHeaderAndSide();
     });
+  </script>
+
+  <!-- MASKELİ KULLANICI & KREDİ KODU BLOĞU (ÖRNEK) -->
+  <script>
+    /*
+      Buraya kendi oyuncu ve kredi kodu verini maskeli şekilde ekleyeceksin.
+
+      1) JSON yapısı şöyle olmalı:
+
+      {
+        "users": ["AlexDeSouza", "GheorgheHagi"],
+        "codes": {
+          "AlexDeSouza": ["K7Q9ZL01", "K7Q9ZL02"],
+          "GheorgheHagi": ["P4M2XR01", "P4M2XR02"]
+        }
+      }
+
+      2) Bu JSON'u base64'e çevir (ör: online base64 encoder veya kendi scriptin).
+
+      3) Ortaya çıkan base64 stringi aşağıdaki değişkene ata:
+
+      window.__FOURTYLOOPS_MASKED_DATA__ = "BURAYA_BASE64_JSON_GELECEK";
+
+      ÖRNEK (tamamen örnek, gerçek verilerini burada kullanma):
+
+      window.__FOURTYLOOPS_MASKED_DATA__ =
+        "eyJ1c2VycyI6WyJBbGV4RGVTb3V6YSIsIkdoZW9yZ2hlSGFnaSJdLCJjb2RlcyI6eyJBbGV4RGVTb3V6YSI6WyJLN1E5WkwwMSIsIks3UTlaTDAyIl0sIkdoZW9yZ2hlSGFnaSI6WyJQNE0yWFIwMSIsIlA0TTJYUjAyIl19fQ==";
+    */
+    // window.__FOURTYLOOPS_MASKED_DATA__ = "<base64-string>";
   </script>
 </body>
 </html>
