@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>FATOBELLS - Arcade Slot</title>
+    <title>FATOBELLS - Mechanical Edition</title>
     <style>
         :root {
             --c-bg: #020617;
             --c-panel: #0f172a;
             --c-gold: #fbbf24;
             --c-neon: #06b6d4;
-            --c-bonus-bg: #2e1065;
             --c-text: #e2e8f0;
             --c-win: #22c55e;
             --c-error: #ef4444;
+            --c-bell-bg: #7f1d1d; /* Koyu Kırmızı Bell Arkaplanı */
             --font-main: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -41,6 +41,7 @@
         .btn:active { transform: scale(0.95); }
         .btn-gold { border-color: var(--c-gold); color: var(--c-gold); background: rgba(251, 191, 36, 0.1); }
         .btn-red { border-color: var(--c-error); color: var(--c-error); background: rgba(239, 68, 68, 0.1); }
+        .btn-active { background: var(--c-neon); color: #000; box-shadow: 0 0 10px var(--c-neon); } /* Aktif buton hali */
 
         /* LOGIN & ADMIN */
         .login-screen, .admin-screen {
@@ -58,10 +59,7 @@
 
         /* GAME CONTAINER */
         .game-container {
-            width: 100%; max-width: 1200px; 
-            /* Varsayılan Yatay (Landscape) Görünüm */
-            aspect-ratio: 16/9; max-height: 95dvh;
-            
+            width: 100%; max-width: 1200px; aspect-ratio: 16/9; max-height: 95dvh;
             background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
             border: 2px solid var(--c-gold); border-radius: 10px;
             display: flex; flex-direction: column; position: relative;
@@ -69,33 +67,16 @@
             transition: background 0.5s, border-color 0.5s;
         }
 
-        /* PORTRAIT MODE (DİK MOD) */
+        /* PORTRAIT MODE */
         @media (orientation: portrait) {
-            .game-container {
-                aspect-ratio: auto; /* Oranı serbest bırak */
-                height: 100dvh;     /* Tüm ekranı kapla */
-                max-height: none;
-                border: none;
-                border-radius: 0;
-            }
-            /* Elemanların yerleşimi değişiyor */
+            .game-container { aspect-ratio: auto; height: 100dvh; max-height: none; border: none; border-radius: 0; }
             .header { height: 10% !important; padding: 10px !important; }
             .reels-area { height: 65% !important; }
             .controls { height: 25% !important; flex-direction: column; justify-content: space-around; padding: 10px !important; }
-            
-            /* Logo Dikeyde Gizlensin, alan açılsın */
             .brand { display: none; }
             .stats { width: 100%; justify-content: space-between; }
-            
-            /* Spin butonu dikeyde daha büyük */
-            #spinBtn { 
-                width: 25vw !important; height: 25vw !important; 
-                max-width: 120px; max-height: 120px; 
-                margin-top: 0 !important; 
-            }
+            #spinBtn { width: 25vw !important; height: 25vw !important; max-width: 120px; max-height: 120px; margin-top: 0 !important; }
             .control-group { width: 100%; justify-content: space-between; }
-            
-            /* Sembol boyutu dikeyde ayarla */
             .symbol { font-size: 12vw !important; }
         }
 
@@ -130,6 +111,20 @@
         .stat-box { background: #000; padding: 2px 8px; border: 1px solid #444; border-radius: 4px; min-width: 70px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .stat-label { font-size: 0.55rem; color: #94a3b8; }
         .stat-val { color: #fff; font-weight: bold; font-size: 0.95rem; }
+        
+        /* BIG WIN ANIMATION TEXT */
+        .big-win-text {
+            animation: rainbow 1s infinite;
+            font-size: 1.1rem !important;
+        }
+        @keyframes rainbow {
+            0% { color: #ff0000; text-shadow: 0 0 5px #ff0000; }
+            20% { color: #ffff00; text-shadow: 0 0 5px #ffff00; }
+            40% { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
+            60% { color: #00ffff; text-shadow: 0 0 5px #00ffff; }
+            80% { color: #0000ff; text-shadow: 0 0 5px #0000ff; }
+            100% { color: #ff00ff; text-shadow: 0 0 5px #ff00ff; }
+        }
 
         /* REELS */
         .reels-area {
@@ -143,7 +138,8 @@
             border-radius: 8px; padding: 4px;
             transition: border-color 0.3s;
         }
-        .reel-col { display: flex; flex-direction: column; gap: 4px; }
+        .reel-col { display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden;}
+        
         .symbol {
             flex: 1; background: #0f172a; border-radius: 4px;
             display: flex; justify-content: center; align-items: center;
@@ -152,45 +148,63 @@
         }
         @media (min-width: 1px) { .symbol { font-size: clamp(1rem, 4vw, 2.5rem); } }
 
-        /* SYMBOLS COLORS */
-        .sym-1 { color: var(--c-gold); } /* BELL */
-        .sym-2 { color: #ef4444; } /* 7 */
-        .sym-3 { color: #a855f7; } /* STAR */
-        .sym-4 { color: #22c55e; } /* BAR */
-        .sym-5 { color: #ec4899; } /* GRAPE */
-        .sym-6 { color: #eab308; } /* LEMON */
-        .sym-7 { color: #f43f5e; } /* CHERRY */
-        .sym-8 { color: #6366f1; } /* PLUM */
-        .sym-0 { color: #fff; text-shadow: 0 0 10px #fff; } /* WILD */
-        .sym-9 { color: #06b6d4; } /* SCATTER */
-        .sym-dim { opacity: 0.3; filter: grayscale(0.8); } /* Non-winning Bonus Symbols */
+        /* SYMBOLS STYLES */
+        .sym-1 { 
+            color: var(--c-gold); 
+            /* Ziller için özel arkaplan - Ulusoy Hissi */
+            background: linear-gradient(135deg, #450a0a, #7f1d1d); 
+            border-color: #f59e0b;
+            box-shadow: inset 0 0 10px #000;
+        } 
+        .sym-2 { color: #ef4444; } 
+        .sym-3 { color: #a855f7; } 
+        .sym-4 { color: #22c55e; } 
+        .sym-5 { color: #ec4899; } 
+        .sym-6 { color: #eab308; } 
+        .sym-7 { color: #f43f5e; } 
+        .sym-8 { color: #6366f1; } 
+        .sym-0 { color: #fff; text-shadow: 0 0 10px #fff; } 
+        .sym-9 { color: #06b6d4; } 
+        .sym-dim { opacity: 0.3; filter: grayscale(0.8); }
         
-        .sym-val {
-            position: absolute; bottom: 2%; font-size: 0.35em; background: rgba(0,0,0,0.8);
-            padding: 1px 4px; border-radius: 4px; color: #fff; font-family: monospace; pointer-events: none;
+        .sym-val { position: absolute; bottom: 2%; font-size: 0.35em; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 4px; color: #fff; font-family: monospace; pointer-events: none; }
+        .sym-mult { position: absolute; top: 5%; right: 5%; font-size: 0.4em; background: #ef4444; color: #fff; padding: 2px; border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 5px #ef4444; font-weight: bold; }
+
+        /* ANIMATIONS - MECHANICAL FEEL */
+        /* Motion Blur Effect: Moves content quickly */
+        .spinning .symbol {
+            color: transparent;
+            text-shadow: none;
+            background-image: linear-gradient(180deg, 
+                rgba(255,255,255,0.1) 0%, 
+                rgba(255,255,255,0.5) 25%, 
+                rgba(255,255,255,0.1) 50%,
+                rgba(255,255,255,0.5) 75%,
+                rgba(255,255,255,0.1) 100%);
+            background-size: 100% 50%;
+            animation: reelBlur 0.1s infinite linear;
+            border-color: #333;
         }
-        .sym-mult {
-            position: absolute; top: 5%; right: 5%; font-size: 0.4em; 
-            background: #ef4444; color: #fff; padding: 2px; border-radius: 50%; 
-            width: 20px; height: 20px; display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 5px #ef4444; font-weight: bold;
+        @keyframes reelBlur { 0% { background-position: 0 0; } 100% { background-position: 0 200%; } }
+
+        /* Mechanical Stop Bounce */
+        .bounce { animation: bounceStop 0.3s ease-out; }
+        @keyframes bounceStop {
+            0% { transform: translateY(-20%); }
+            40% { transform: translateY(10%); }
+            70% { transform: translateY(-5%); }
+            100% { transform: translateY(0); }
         }
 
-        /* ANIMATIONS */
-        .spinning .symbol { filter: blur(3px); transform: translateY(0); }
         .win-anim { animation: pulseWin 0.8s infinite; z-index: 10; border: 2px solid #fff !important; background-color: rgba(34, 197, 94, 0.4) !important; }
         @keyframes pulseWin { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
         .bonus-shaker { animation: shake 0.5s infinite; border-color: #d946ef !important; background-color: rgba(217, 70, 239, 0.2) !important; }
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(2deg); } 75% { transform: rotate(-2deg); } }
 
         /* CONTROLS */
-        .controls {
-            height: 16%; background: #020617; border-top: 1px solid #333;
-            display: flex; justify-content: space-between; align-items: center; padding: 0 10px;
-        }
+        .controls { height: 16%; background: #020617; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
         .control-group { display: flex; align-items: center; gap: 5px; }
-        
-        /* Manuel Bet Input Area */
         .bet-selector { display: flex; align-items: center; gap: 2px; background: #000; padding: 2px; border-radius: 5px; cursor: pointer; border: 1px solid #333; }
         .bet-display { min-width: 50px; text-align: center; font-weight: bold; font-size: 0.9rem; padding: 0 5px;}
         
@@ -206,19 +220,10 @@
         #spinBtn:disabled { background: #333; border-color: #555; box-shadow: none; }
 
         /* MODALS */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 100; display: none;
-            justify-content: center; align-items: center;
-        }
-        .modal {
-            background: #0f172a; border: 2px solid var(--c-neon); width: 85%; max-width: 400px;
-            padding: 20px; border-radius: 10px; color: #fff; text-align: center;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal { background: #0f172a; border: 2px solid var(--c-neon); width: 85%; max-width: 400px; padding: 20px; border-radius: 10px; color: #fff; text-align: center; }
         .paytable-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; text-align: left; font-size: 0.8rem;}
         .pay-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px; }
-        
-        /* Admin Table */
         .admin-container { width: 100%; overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { padding: 5px; border: 1px solid #334155; text-align: left; }
@@ -229,30 +234,23 @@
     <div id="app">
         <div id="loginScreen" class="login-screen">
             <div class="login-title">FATOBELLS</div>
-            <p style="color:#888;">ARCADE EDITION</p>
-            <div class="input-group">
-                <input type="text" id="usernameInput" maxlength="10" placeholder="PLAYER CODE">
-            </div>
+            <p style="color:#888;">MECHANICAL EDITION</p>
+            <div class="input-group"><input type="text" id="usernameInput" maxlength="10" placeholder="PLAYER CODE"></div>
             <div id="loginMsg" style="color: var(--c-error); height: 20px; margin-bottom: 10px;"></div>
             <button class="btn btn-gold" id="btnLogin" style="width: 100%; font-size: 1.2rem; padding: 15px;">INSERT COIN</button>
         </div>
 
         <div id="adminScreen" class="admin-screen hidden">
-            <div class="login-title" style="font-size: 1.5rem;">ADMIN DASHBOARD</div>
-            <div class="admin-container">
-                <table id="adminTable"><thead><tr><th>P</th><th>Bal</th><th>S</th><th>Act</th></tr></thead><tbody></tbody></table>
-            </div>
+            <div class="login-title" style="font-size: 1.5rem;">ADMIN</div>
+            <div class="admin-container"><table id="adminTable"><thead><tr><th>P</th><th>Bal</th><th>Act</th></tr></thead><tbody></tbody></table></div>
             <button class="btn btn-red" id="btnAdminLogout" style="margin-top:10px;">LOG OUT</button>
         </div>
 
         <div id="gameScreen" class="game-container hidden">
-            
             <header class="header">
-                <div class="brand">
-                    <h1>FATOBELLS</h1>
-                </div>
+                <div class="brand"><h1>FATOBELLS</h1></div>
                 <div class="bonus-header-ui" id="bonusHeader">
-                    <div class="bonus-header-text">BONUS RESPIN:</div>
+                    <div class="bonus-header-text">BONUS:</div>
                     <div class="respin-count" id="bonusRespins">3</div>
                 </div>
                 <div class="stats">
@@ -262,9 +260,7 @@
                 </div>
             </header>
 
-            <main class="reels-area">
-                <div class="reels-frame" id="reelsGrid"></div>
-            </main>
+            <main class="reels-area"><div class="reels-frame" id="reelsGrid"></div></main>
 
             <footer class="controls">
                 <div class="control-group">
@@ -275,16 +271,11 @@
                         <button class="btn btn-gold" id="btnRedeem" style="padding:5px;">OK</button>
                     </div>
                 </div>
-
                 <button id="spinBtn">SPIN</button>
-
                 <div class="control-group" style="justify-content: flex-end;">
                     <div class="bet-selector" id="betBox">
                         <button class="btn" id="btnBetMinus" style="padding:5px 8px;">-</button>
-                        <div class="bet-display">
-                            <span style="font-size:0.6rem; color:#888; display:block;">BET</span>
-                            <span id="dispBet">1.00</span>
-                        </div>
+                        <div class="bet-display"><span style="font-size:0.6rem; color:#888; display:block;">BET</span><span id="dispBet">1.00</span></div>
                         <button class="btn" id="btnBetPlus" style="padding:5px 8px;">+</button>
                     </div>
                     <button class="btn" id="btnAuto">AUTO</button>
@@ -297,7 +288,7 @@
     <div id="betModal" class="modal-overlay">
         <div class="modal">
             <h2 style="border:none; margin-top:0;">SET BET</h2>
-            <input type="number" id="manualBetInput" inputmode="decimal" pattern="[0-9]*" style="width:80%; font-size:1.5rem; margin:20px 0;" placeholder="0.00">
+            <input type="number" id="manualBetInput" inputmode="decimal" style="width:80%; font-size:1.5rem; margin:20px 0;" placeholder="0.00">
             <div style="display:flex; gap:10px; justify-content:center;">
                 <button class="btn btn-red" onclick="document.getElementById('betModal').style.display='none'">CANCEL</button>
                 <button class="btn btn-gold" id="btnConfirmBet">SET</button>
@@ -309,9 +300,8 @@
         <div class="modal">
             <div style="display:flex; justify-content:space-between;"><h2>RULES</h2><button class="btn btn-red" onclick="document.getElementById('helpModal').style.display='none'">X</button></div>
             <p><strong>WILD (🃏):</strong> Subs all except Bonus/Scatter.</p>
-            <p><strong>BONUS:</strong> 5+ BELLS trigger. Empty spots spin!</p>
-            <h3>PAYTABLE</h3>
-            <div class="paytable-grid" id="paytableContent"></div>
+            <p><strong>BONUS:</strong> 5+ BELLS trigger.</p>
+            <h3>PAYTABLE</h3><div class="paytable-grid" id="paytableContent"></div>
         </div>
     </div>
 
@@ -325,10 +315,10 @@
     </div>
 
 <script>
-/* DATA */
+/* CONFIG */
 const PLAYERS = ["ALEX", "HAGI", "NOUMA", "MESSI", "RONALDO"];
 const ADMIN_CODE = "YFTHH";
-const STORAGE_PREFIX = "fatobells_v3_";
+const STORAGE_PREFIX = "fatobells_v4_";
 const CREDIT_CODES = {
     "ALEX": ["9KHT2B","X7M4QZ","P3L9YJ","W2R8DK","N5F1GC","B8V4HX","T6J2MA","Q9Z5RP","L4W7SE","Y1N8KF","C3B6XD","H9T2VJ","M5P1GQ","R8L4ZW","F2K7NC","J6H3XB","S9D5VM","Z1Q8TR","G4W2YF","K7N9PC","V3B6JD","D8H1MQ","X5L4SW","P2F7RZ","T9J3GK","W6N1BC","L8V4XH","Q2Z7MP","B5T9YD","H1K3RF","M6P8JG","R4S2WN","F9C5VQ","J3H7XZ","S1D6LB","Z8Q4TM","G2W9KF","K5N1YC","V7B3JD","D4H8MP","X9L2SW","P6F1RZ","T3J7GK","W8N5BC","L2V9XH","Q5Z3MP","B1T6YD","H4K8RF","M9P2JG","R7S5WN"],
     "HAGI": ["A4L9ZK","E2R7XJ","U8T1WC","I5O3MV","Y9P6BQ","D3F8GN","G7H2KS","J1K5LQ","M6N9RA","P4S8VD","B2C7XF","V9W3ZH","L5Y1TJ","R8U4IK","X2A6OE","Z7E3MN","Q1T5GP","W9I8UV","O4P2SD","F6H9JG","K3L7RB","N8M1QC","S5V2WA","T9X4YZ","C6D1EF","H3J8KL","M2N7OP","R5S9TU","V1W6XY","Z8A3BC","E4F9GH","I7K2LM","U3O8PQ","Y6R1ST","D9V5WX","G2H7AB","J5K9CD","M8N3EF","P1S6GH","B7C2IJ","V4W8KL","L9Y5MN","R3U7OP","X6A1QR","Z2E9ST","Q8T4UV","W5I1YZ","O1P6AB","F7H2CD","K9L5EF"],
@@ -342,7 +332,7 @@ const SYMBOLS = [
     { id: 1, name: 'BELL', char: '🔔', val: 0 },
     { id: 2, name: '7', char: '7', val: 10 },
     { id: 3, name: 'STAR', char: '⭐', val: 8 },
-    { id: 4, name: 'BAR', char: '🍫', val: 6 },
+    { id: 4, name: 'BAR', char: '🍫', val: 6 }, // CHANGED TO CHOCOLATE
     { id: 5, name: 'GRAPE', char: '🍇', val: 4 },
     { id: 6, name: 'LEMON', char: '🍋', val: 3 },
     { id: 7, name: 'CHERRY', char: '🍒', val: 2 },
@@ -357,7 +347,6 @@ const LINES = [
     [2,1,1,1,2], [0,2,0,2,0], [1,3,1,3,1], [2,0,2,0,2], [3,1,3,1,3]
 ];
 
-/* GAME ENGINE */
 class SlotGame {
     constructor() {
         this.user = null;
@@ -365,15 +354,16 @@ class SlotGame {
         this.betPerLine = 0.10;
         this.lines = 20;
         this.isSpinning = false;
+        this.autoPlay = false;
+        this.soundOn = true;
+        this.grid = [];
         this.bonusActive = false;
         this.bonusRespins = 3;
         this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
         this.initUI();
         this.checkLogin();
     }
 
-    /* STORAGE */
     getKey(k) { return `${STORAGE_PREFIX}${this.user}_${k}`; }
     save() { localStorage.setItem(this.getKey('bal'), this.balance.toFixed(2)); }
     load(u) {
@@ -382,18 +372,23 @@ class SlotGame {
         this.updateUI();
     }
 
-    /* UI */
     initUI() {
-        document.getElementById('btnLogin').onclick = () => this.login();
-        document.getElementById('spinBtn').onclick = () => this.spin();
-        document.getElementById('btnLogout').onclick = () => { this.user=null; this.checkLogin(); };
+        document.getElementById('btnLogin').onclick = () => { this.audioCtx.resume(); this.login(); };
+        document.getElementById('spinBtn').onclick = () => { this.audioCtx.resume(); this.spin(); };
+        document.getElementById('btnLogout').onclick = () => { this.user=null; this.autoPlay=false; this.checkLogin(); };
         document.getElementById('btnHelp').onclick = () => document.getElementById('helpModal').style.display='flex';
         document.getElementById('btnConfirmBet').onclick = () => this.setManualBet();
         document.getElementById('btnBetPlus').onclick = (e) => { e.stopPropagation(); this.changeBet(0.1); };
         document.getElementById('btnBetMinus').onclick = (e) => { e.stopPropagation(); this.changeBet(-0.1); };
         document.getElementById('betBox').onclick = () => this.openBetModal();
+        document.getElementById('btnAuto').onclick = () => this.toggleAuto();
+        document.getElementById('btnRedeem').onclick = () => this.redeemCode();
+        document.getElementById('btnSound').onclick = () => { 
+            this.audioCtx.resume();
+            this.soundOn = !this.soundOn; 
+            document.getElementById('btnSound').style.opacity = this.soundOn ? 1 : 0.5; 
+        };
         
-        // Paytable
         const pt = document.getElementById('paytableContent');
         [0,2,3,4,5,6,7,8].forEach(id => {
              const v = PAYTABLE[id] || PAYTABLE["0_PURE"];
@@ -438,19 +433,43 @@ class SlotGame {
         const t = document.querySelector('#adminTable tbody'); t.innerHTML = '';
         PLAYERS.forEach(p => {
             const b = localStorage.getItem(`${STORAGE_PREFIX}${p}_bal`) || '1000';
-            t.innerHTML += `<tr><td>${p}</td><td>${parseInt(b)}</td><td>-</td><td><button class="btn btn-red" onclick="game.reset('${p}')">R</button></td></tr>`;
+            t.innerHTML += `<tr><td>${p}</td><td>${parseInt(b)}</td><td><button class="btn btn-red" onclick="game.reset('${p}')">R</button></td></tr>`;
         });
         document.getElementById('btnAdminLogout').onclick = () => this.checkLogin();
     }
 
     reset(p) { localStorage.removeItem(`${STORAGE_PREFIX}${p}_bal`); this.showAdmin(); }
 
-    /* BETTING */
+    redeemCode() {
+        const input = document.getElementById('codeInput');
+        const code = input.value.trim().toUpperCase();
+        if(!code) return;
+        if(!CREDIT_CODES[this.user].includes(code)) {
+            alert("❌ INVALID CODE\nThis code does not belong to your account.");
+            return;
+        }
+        if(localStorage.getItem(`${STORAGE_PREFIX}${this.user}_code_${code}`) === 'true') {
+            alert("⚠️ CODE ALREADY USED\nYou have already redeemed this code.");
+            return;
+        }
+        this.balance += 1000;
+        localStorage.setItem(`${STORAGE_PREFIX}${this.user}_code_${code}`, 'true');
+        this.save(); this.updateUI();
+        alert("✅ SUCCESS\n1000 Credits added to balance!");
+        input.value = '';
+    }
+
     changeBet(d) { if(!this.isSpinning) { this.betPerLine = Math.max(0.1, Math.min(100, this.betPerLine+d)); this.updateUI(); } }
     openBetModal() { if(!this.isSpinning) { document.getElementById('manualBetInput').value = this.betPerLine.toFixed(2); document.getElementById('betModal').style.display = 'flex'; } }
     setManualBet() {
         const v = parseFloat(document.getElementById('manualBetInput').value);
         if(v >= 0.1 && v <= 500) { this.betPerLine = v; this.updateUI(); document.getElementById('betModal').style.display='none'; }
+    }
+
+    toggleAuto() {
+        this.autoPlay = !this.autoPlay;
+        document.getElementById('btnAuto').classList.toggle('btn-active', this.autoPlay);
+        if(this.autoPlay && !this.isSpinning) this.spin();
     }
 
     updateUI() {
@@ -460,6 +479,7 @@ class SlotGame {
     }
 
     playTone(freq, type, len) {
+        if(!this.soundOn) return;
         const o = this.audioCtx.createOscillator(); const g = this.audioCtx.createGain();
         o.connect(g); g.connect(this.audioCtx.destination);
         o.frequency.value = freq; o.type = type; g.gain.value = 0.05;
@@ -467,17 +487,21 @@ class SlotGame {
     }
 
     startBonusMusic() { 
+        if(!this.soundOn) return;
         let n=0; const notes=[261,329,392,523];
         this.musInt = setInterval(()=>{ this.playTone(notes[n%4], 'square', 0.1); n++; }, 200);
     }
     stopBonusMusic() { clearInterval(this.musInt); }
 
-    /* GAMEPLAY */
     spin() {
         const cost = this.betPerLine * this.lines;
-        if(this.balance < cost) return alert("NO CASH");
+        if(this.balance < cost) { this.autoPlay=false; document.getElementById('btnAuto').classList.remove('btn-active'); return alert("NO CASH"); }
         this.balance -= cost; this.isSpinning = true; this.updateUI();
+        
+        // Reset grid visuals
+        document.getElementById('dispWin').className = 'stat-val win'; // reset big win color
         document.querySelectorAll('.symbol').forEach(e => { e.className='symbol'; e.innerHTML=''; e.style.backgroundColor=''; });
+        
         this.grid = [];
         for(let c=0; c<5; c++) {
             let col=[]; for(let r=0; r<4; r++) col.push(this.getRnd());
@@ -488,31 +512,35 @@ class SlotGame {
 
     getRnd() {
         const r=Math.random();
-        if(r<0.07) return SYMBOLS[1]; // Bell
-        if(r<0.17) return SYMBOLS[0]; // Wild
-        if(r<0.12) return SYMBOLS[9]; // Scatter
+        if(r<0.07) return SYMBOLS[1]; 
+        if(r<0.17) return SYMBOLS[0];
+        if(r<0.12) return SYMBOLS[9];
         return SYMBOLS[Math.floor(Math.random()*7)+2];
     }
 
     animateSpin() {
         const cols = document.querySelectorAll('.reel-col');
         cols.forEach(c=>c.classList.add('spinning'));
-        this.playTone(200, 'triangle', 0.2);
+        this.playTone(150, 'triangle', 0.2);
         
         let stops=0;
         for(let i=0; i<5; i++) {
             setTimeout(() => {
                 cols[i].classList.remove('spinning');
-                this.renderCol(i); this.playTone(100, 'sine', 0.05);
+                this.renderCol(i); 
+                // Mechanical Stop Sound
+                this.playTone(80, 'sawtooth', 0.05); 
                 stops++; if(stops===5) this.eval();
-            }, 500 + i*200);
+            }, 400 + i*250); // Slightly longer delays for mechanical feel
         }
     }
 
     renderCol(c) {
         const d = document.getElementById(`reel-${c}`); d.innerHTML='';
         this.grid[c].forEach(s => {
-            const el = document.createElement('div'); el.className=`symbol sym-${s.id}`; el.textContent=s.char;
+            const el = document.createElement('div'); 
+            el.className=`symbol sym-${s.id} bounce`; // Add bounce class for stop effect
+            el.textContent=s.char;
             d.appendChild(el);
         });
     }
@@ -539,8 +567,21 @@ class SlotGame {
     }
 
     endSpin(win) {
-        if(win>0) { this.balance+=win; document.getElementById('dispWin').textContent=win.toFixed(2); this.playTone(600,'triangle',0.3); }
+        if(win>0) { 
+            this.balance+=win; 
+            const winDisp = document.getElementById('dispWin');
+            winDisp.textContent=win.toFixed(2);
+            this.playTone(600,'triangle',0.3);
+            
+            // Big Win Logic (>5x total bet)
+            const totalBet = this.betPerLine * this.lines;
+            if (win > totalBet * 5) {
+                winDisp.classList.add('big-win-text');
+                this.playTone(800,'square',0.5); // Extra sound
+            }
+        }
         this.save(); this.isSpinning=false; this.updateUI();
+        if(this.autoPlay) setTimeout(() => this.spin(), 1200);
     }
 
     /* BONUS */
@@ -552,12 +593,11 @@ class SlotGame {
         document.getElementById('bonusRespins').textContent = 3;
         this.startBonusMusic();
 
-        // Init Board
         for(let c=0; c<5; c++) {
             const d = document.getElementById(`reel-${c}`);
             for(let r=0; r<4; r++) {
                 const el = d.children[r];
-                el.classList.remove('win-anim');
+                el.classList.remove('win-anim', 'bounce');
                 if(bells.find(b=>b.c===c && b.r===r)) this.lockBell(el);
                 else { el.className='symbol sym-dim'; el.textContent = this.getRndNonBell().char; }
             }
@@ -566,7 +606,7 @@ class SlotGame {
     }
 
     lockBell(el) {
-        const m = Math.random()<0.1; // Multiplier chance
+        const m = Math.random()<0.1;
         if(m) {
             const x = Math.random()<0.5?2:3;
             el.innerHTML=`🔔<div class="sym-mult">x${x}</div>`; el.dataset.v=0; el.dataset.m=x;
@@ -586,14 +626,12 @@ class SlotGame {
         if(this.bonusRespins<=0) return this.endBonus();
         this.bonusRespins--; document.getElementById('bonusRespins').textContent = this.bonusRespins;
         
-        // Identify Empties & Animate
         const empties = [];
         for(let c=0; c<5; c++) {
             const d = document.getElementById(`reel-${c}`);
             for(let r=0; r<4; r++) {
                 if(!d.children[r].classList.contains('bonus-shaker')) {
                     empties.push(d.children[r]);
-                    // SHOW RANDOM SYMBOLS DURING SPIN
                     d.children[r].textContent = this.getRndNonBell().char;
                     d.children[r].className = 'symbol spinning';
                 }
@@ -604,13 +642,8 @@ class SlotGame {
             let hit = false;
             empties.forEach(el => {
                 el.classList.remove('spinning');
-                if(Math.random() < 0.12) { // Hit Bell
-                    this.lockBell(el); hit = true;
-                } else {
-                    // Miss - Show dimmed non-bell
-                    el.className = 'symbol sym-dim';
-                    el.textContent = this.getRndNonBell().char;
-                }
+                if(Math.random() < 0.12) { this.lockBell(el); hit = true; }
+                else { el.className = 'symbol sym-dim'; el.textContent = this.getRndNonBell().char; }
             });
 
             if(hit) { this.bonusRespins=3; this.playTone(800,'square',0.2); }
@@ -624,9 +657,7 @@ class SlotGame {
     endBonus() {
         this.stopBonusMusic();
         let cash=0; let mult=1; let cnt=0;
-        document.querySelectorAll('.bonus-shaker').forEach(e => {
-            cash+=parseFloat(e.dataset.v); mult*=parseInt(e.dataset.m); cnt++;
-        });
+        document.querySelectorAll('.bonus-shaker').forEach(e => { cash+=parseFloat(e.dataset.v); mult*=parseInt(e.dataset.m); cnt++; });
         
         cash *= mult;
         let msg = ""; const tb = this.betPerLine*20;
