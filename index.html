@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>FATOBELLS - Lower RTP Edition</title>
+    <title>FATOBELLS - Real Casino Math</title>
     <style>
         :root {
             --c-bg: #020617;
@@ -113,18 +113,8 @@
         .stat-val { color: #fff; font-weight: bold; font-size: 0.95rem; }
         
         /* BIG WIN ANIMATION TEXT */
-        .big-win-text {
-            animation: rainbow 1s infinite;
-            font-size: 1.1rem !important;
-        }
-        @keyframes rainbow {
-            0% { color: #ff0000; text-shadow: 0 0 5px #ff0000; }
-            20% { color: #ffff00; text-shadow: 0 0 5px #ffff00; }
-            40% { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-            60% { color: #00ffff; text-shadow: 0 0 5px #00ffff; }
-            80% { color: #0000ff; text-shadow: 0 0 5px #0000ff; }
-            100% { color: #ff00ff; text-shadow: 0 0 5px #ff00ff; }
-        }
+        .big-win-text { animation: rainbow 1s infinite; font-size: 1.1rem !important; }
+        @keyframes rainbow { 0% { color: #ff0000; } 50% { color: #ffff00; } 100% { color: #00ff00; } }
 
         /* REELS */
         .reels-area {
@@ -171,27 +161,14 @@
 
         /* ANIMATIONS - MECHANICAL FEEL */
         .spinning .symbol {
-            color: transparent;
-            text-shadow: none;
-            background-image: linear-gradient(180deg, 
-                rgba(255,255,255,0.1) 0%, 
-                rgba(255,255,255,0.5) 25%, 
-                rgba(255,255,255,0.1) 50%,
-                rgba(255,255,255,0.5) 75%,
-                rgba(255,255,255,0.1) 100%);
-            background-size: 100% 50%;
-            animation: reelBlur 0.1s infinite linear;
-            border-color: #333;
+            color: transparent; text-shadow: none;
+            background-image: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 75%, rgba(255,255,255,0.1) 100%);
+            background-size: 100% 50%; animation: reelBlur 0.1s infinite linear; border-color: #333;
         }
         @keyframes reelBlur { 0% { background-position: 0 0; } 100% { background-position: 0 200%; } }
 
         .bounce { animation: bounceStop 0.3s ease-out; }
-        @keyframes bounceStop {
-            0% { transform: translateY(-20%); }
-            40% { transform: translateY(10%); }
-            70% { transform: translateY(-5%); }
-            100% { transform: translateY(0); }
-        }
+        @keyframes bounceStop { 0% { transform: translateY(-20%); } 40% { transform: translateY(10%); } 70% { transform: translateY(-5%); } 100% { transform: translateY(0); } }
 
         .win-anim { animation: pulseWin 0.8s infinite; z-index: 10; border: 2px solid #fff !important; background-color: rgba(34, 197, 94, 0.4) !important; }
         @keyframes pulseWin { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
@@ -231,10 +208,10 @@
     <div id="app">
         <div id="loginScreen" class="login-screen">
             <div class="login-title">FATOBELLS</div>
-            <p style="color:#888;">LOWER RTP EDITION</p>
+            <p style="color:#888;">REAL CASINO MATH</p>
             <div class="input-group"><input type="text" id="usernameInput" maxlength="10" placeholder="PLAYER CODE"></div>
             <div id="loginMsg" style="color: var(--c-error); height: 20px; margin-bottom: 10px;"></div>
-            <button class="btn btn-gold" id="btnLogin" style="width: 100%; font-size: 1.2rem; padding: 15px;">INSERT COIN</button>
+            <button class="btn btn-gold" id="btnLogin" style="width: 100%; font-size: 1.2rem; padding: 15px;">ENTER</button>
         </div>
 
         <div id="adminScreen" class="admin-screen hidden">
@@ -296,8 +273,9 @@
     <div id="helpModal" class="modal-overlay">
         <div class="modal">
             <div style="display:flex; justify-content:space-between;"><h2>RULES</h2><button class="btn btn-red" onclick="document.getElementById('helpModal').style.display='none'">X</button></div>
-            <p><strong>WILD (🃏):</strong> Subs all except Bonus/Scatter.</p>
-            <p><strong>BONUS:</strong> 5+ BELLS trigger.</p>
+            <p><strong>RTP:</strong> Real Casino Mode (High Volatility).</p>
+            <p><strong>WILD (🃏):</strong> Very rare.</p>
+            <p><strong>BONUS:</strong> 5+ BELLS trigger. Hard to hit!</p>
             <h3>PAYTABLE</h3><div class="paytable-grid" id="paytableContent"></div>
         </div>
     </div>
@@ -313,15 +291,15 @@
 
 <script>
 /* CONFIG */
-const PLAYERS = ["ANIL", "SABIT", "FY1903", "SINAN", "BURAK"];
+const PLAYERS = ["ANIL", "SABIT", "FY1903", "BURAK", "LEFTER"];
 const ADMIN_CODE = "YFTHH";
-const STORAGE_PREFIX = "fatobells_v4_";
+const STORAGE_PREFIX = "fatobells_v5_real_";
 const CREDIT_CODES = {
-    "ANIL": ["9KHT2B","X7M4QZ","P3L9YJ","W2R8DK","N5F1GC","B8V4HX","T6J2MA","Q9Z5RP","L4W7SE","Y1N8KF","C3B6XD","H9T2VJ","M5P1GQ","R8L4ZW","F2K7NC","J6H3XB","S9D5VM","Z1Q8TR","G4W2YF","K7N9PC","V3B6JD","D8H1MQ","X5L4SW","P2F7RZ","T9J3GK","W6N1BC","L8V4XH","Q2Z7MP","B5T9YD","H1K3RF","M6P8JG","R4S2WN","F9C5VQ","J3H7XZ","S1D6LB","Z8Q4TM","G2W9KF","K5N1YC","V7B3JD","D8H1MQ","X5L4SW","P2F7RZ","T9J3GK","W6N1BC","L8V4XH","Q2Z7MP","B5T9YD","H1K3RF","M6P8JG","R4S2WN","F9C5VQ","J3H7XZ","S1D6LB","Z8Q4TM","G2W9KF","K5N1YC","V7B3JD","D4H8MP","X9L2SW","P6F1RZ","T3J7GK","W8N5BC","L2V9XH","Q5Z3MP","B1T6YD","H4K8RF","M9P2JG","R7S5WN"],
+    "ANIL": ["9KHT2B","X7M4QZ","P3L9YJ","W2R8DK","N5F1GC","B8V4HX","T6J2MA","Q9Z5RP","L4W7SE","Y1N8KF","C3B6XD","H9T2VJ","M5P1GQ","R8L4ZW","F2K7NC","J6H3XB","S9D5VM","Z1Q8TR","G4W2YF","K7N9PC","V3B6JD","D8H1MQ","X5L4SW","P2F7RZ","T9J3GK","W6N1BC","L8V4XH","Q2Z7MP","B5T9YD","H1K3RF","M6P8JG","R4S2WN","F9C5VQ","J3H7XZ","S1D6LB","Z8Q4TM","G2W9KF","K5N1YC","V7B3JD","D4H8MP","X9L2SW","P6F1RZ","T3J7GK","W8N5BC","L2V9XH","Q5Z3MP","B1T6YD","H4K8RF","M9P2JG","R7S5WN"],
     "SABIT": ["A4L9ZK","E2R7XJ","U8T1WC","I5O3MV","Y9P6BQ","D3F8GN","G7H2KS","J1K5LQ","M6N9RA","P4S8VD","B2C7XF","V9W3ZH","L5Y1TJ","R8U4IK","X2A6OE","Z7E3MN","Q1T5GP","W9I8UV","O4P2SD","F6H9JG","K3L7RB","N8M1QC","S5V2WA","T9X4YZ","C6D1EF","H3J8KL","M2N7OP","R5S9TU","V1W6XY","Z8A3BC","E4F9GH","I7K2LM","U3O8PQ","Y6R1ST","D9V5WX","G2H7AB","J5K9CD","M8N3EF","P1S6GH","B7C2IJ","V4W8KL","L9Y5MN","R3U7OP","X6A1QR","Z2E9ST","Q8T4UV","W5I1YZ","O1P6AB","F7H2CD","K9L5EF"],
     "FY1903": ["T7R2WQ","Y4U9IP","O1A6SD","P8S3DF","A5D2FG","S9F7HJ","D4G1KL","F2H6LZ","G8J3XC","H5K9VN","J2L4BM","K7Z1QW","L3X6ER","Z9C5TY","X4V8UI","C1B7OP","V6N2MA","B3M9SD","N7Q4DF","M2W1GH","Q8E5JK","W5R3LZ","E9T6XC","R4Y2VN","T1U7BM","Y6I9QW","U3O4ER","I8P2TY","O5A7UI","P2S9OP","A7D4MA","S1F6SD","D6G8DF","F3H5GH","G9J1JK","H4K7LZ","J8L2XC","K5Z9VN","L1X3BM","Z6C8QW","X2V4ER","C7B9TY","V3N5UI","B8M1OP","N5Q6MA","M9W2SD","Q3E7DF","W7R4GH","E2T8JK","R6Y1LZ"],
-    "SINAN": ["M3N8BV","E6R1TC","S9D4FG","S2F7HJ","I5O9KL","M8P3LZ","O2A6XC","N7S1VN","A4D9BM","L1F5QW","D6G2ER","O9H7TY","R3J4UI","C8K1OP","E5L6MA","L2Z9SD","O6X4DF","N1C8GH","A9V3JK","M4B7LZ","E7N2XC","S3M6VN","S8Q1BM","I2W5QW","M6E9ER","O3R4TY","N9T8UI","A2Y7OP","L5U3MA","D8I6SD","O1O9DF","R6P2GH","C4A7JK","E9S5LZ","L3D1XC","O7F8VN","N2G4BM","A6H9QW","M1J5ER","E8K3TY","S4L7UI","S7Z2OP","I3X9MA","M9C5SD","O5V1DF","N8B6GH","A1N4JK","L6M9LZ","D2Q3XC","O4W8VN"],
-    "BURAK": ["R9O4PZ","O2P7QA","N5A1WS","A8S6ED","L3D9RF","D7F2TG","O1G5YH","C6H3UJ","R4J8IK","I9K2OL","S2L7ZM","T5Z1XN","I8X6CV","A3C9VB","N6V4BN","O9B2MQ","C2N7WJ","R7M5EK","I1Q8RT","S6W3YU","T2E9OI","I5R4PO","A9T1AS","N3Y6DD","O7U2FG","C4I8HJ","R8O5KL","I2P9LZ","S5A3XC","T9S7VN","I4D2BM","A1F6QW","N7G9ER","O3H4TY","C8J1UI","R2K6OP","I6L3MA","S9Z8SD","T4X5DF","I7C1GH","A5V9JK","N2B4LZ","O6N8XC","C1M3VN","R5Q7BM","I3W2QW","S7E6ER","T1R9TY","I9T5UI","A4Y8OP"]
+    "BURAK": ["M3N8BV","E6R1TC","S9D4FG","S2F7HJ","I5O9KL","M8P3LZ","O2A6XC","N7S1VN","A4D9BM","L1F5QW","D6G2ER","O9H7TY","R3J4UI","C8K1OP","E5L6MA","L2Z9SD","O6X4DF","N1C8GH","A9V3JK","M4B7LZ","E7N2XC","S3M6VN","S8Q1BM","I2W5QW","M6E9ER","O3R4TY","N9T8UI","A2Y7OP","L5U3MA","D8I6SD","O1O9DF","R6P2GH","C4A7JK","E9S5LZ","L3D1XC","O7F8VN","N2G4BM","A6H9QW","M1J5ER","E8K3TY","S4L7UI","S7Z2OP","I3X9MA","M9C5SD","O5V1DF","N8B6GH","A1N4JK","L6M9LZ","D2Q3XC","O4W8VN"],
+    "LEFTER": ["R9O4PZ","O2P7QA","N5A1WS","A8S6ED","L3D9RF","D7F2TG","O1G5YH","C6H3UJ","R4J8IK","I9K2OL","S2L7ZM","T5Z1XN","I8X6CV","A3C9VB","N6V4BN","O9B2MQ","C2N7WJ","R7M5EK","I1Q8RT","S6W3YU","T2E9OI","I5R4PO","A9T1AS","N3Y6DD","O7U2FG","C4I8HJ","R8O5KL","I2P9LZ","S5A3XC","T9S7VN","I4D2BM","A1F6QW","N7G9ER","O3H4TY","C8J1UI","R2K6OP","I6L3MA","S9Z8SD","T4X5DF","I7C1GH","A5V9JK","N2B4LZ","O6N8XC","C1M3VN","R5Q7BM","I3W2QW","S7E6ER","T1R9TY","I9T5UI","A4Y8OP"]
 };
 
 const SYMBOLS = [
@@ -337,20 +315,18 @@ const SYMBOLS = [
     { id: 9, name: 'SCATTER', char: '💎', val: 0 }
 ];
 
-// **********************************************
-// KAZANÇLAR %20 AZALTILDI (Orijinal * 0.80)
+// LOW PAYOUT TABLE (ZOR KAZANÇ)
 const PAYTABLE = { 
     0: [0,0,0], 
-    2: [16,80,400],    // 7 (20, 100, 500) -> (16, 80, 400)
-    3: [12,64,320],    // STAR (15, 80, 400) -> (12, 64, 320)
-    4: [8,40,200],     // BAR/🍫 (10, 50, 250) -> (8, 40, 200)
-    5: [6.4,32,120],   // GRAPE (8, 40, 150) -> (6.4, 32, 120)
-    6: [4,16,80],      // LEMON (5, 20, 100) -> (4, 16, 80)
-    7: [2.4,8,40],     // CHERRY (3, 10, 50) -> (2.4, 8, 40)
-    8: [1.6,4,20],     // PLUM (2, 5, 25) -> (1.6, 4, 20)
-    "0_PURE": [24,120,640] // WILD (30, 150, 800) -> (24, 120, 640)
+    2: [16,80,400],    // 7
+    3: [12,64,320],    // STAR
+    4: [8,40,200],     // BAR
+    5: [6,32,120],     // GRAPE
+    6: [4,16,80],      // LEMON
+    7: [2,8,40],       // CHERRY
+    8: [1,4,20],       // PLUM
+    "0_PURE": [24,120,640] // WILD
 };
-// **********************************************
 
 const LINES = [
     [1,1,1,1,1], [0,0,0,0,0], [2,2,2,2,2], [3,3,3,3,3], [0,1,2,1,0],
@@ -457,17 +433,17 @@ class SlotGame {
         const code = input.value.trim().toUpperCase();
         if(!code) return;
         if(!CREDIT_CODES[this.user].includes(code)) {
-            alert("❌ INVALID CODE\nThis code does not belong to your account.");
+            alert("❌ INVALID CODE");
             return;
         }
         if(localStorage.getItem(`${STORAGE_PREFIX}${this.user}_code_${code}`) === 'true') {
-            alert("⚠️ CODE ALREADY USED\nYou have already redeemed this code.");
+            alert("⚠️ CODE ALREADY USED");
             return;
         }
         this.balance += 1000;
         localStorage.setItem(`${STORAGE_PREFIX}${this.user}_code_${code}`, 'true');
         this.save(); this.updateUI();
-        alert("✅ SUCCESS\n1000 Credits added to balance!");
+        alert("✅ SUCCESS");
         input.value = '';
     }
 
@@ -521,12 +497,31 @@ class SlotGame {
         this.animateSpin();
     }
 
+    // ********************************************
+    // REALISTIC ODDS (ZORLAŞTIRILMIŞ İHTİMALLER)
+    // ********************************************
     getRnd() {
-        const r=Math.random();
-        if(r<0.07) return SYMBOLS[1]; 
-        if(r<0.17) return SYMBOLS[0];
-        if(r<0.12) return SYMBOLS[9];
-        return SYMBOLS[Math.floor(Math.random()*7)+2];
+        const r = Math.random();
+        
+        // 1. Wild (Joker) drastically reduced to 1.5%
+        if(r < 0.015) return SYMBOLS[0]; 
+
+        // 2. Bonus (Bell) reduced to 4.5% (Harder to get 5)
+        if(r < 0.060) return SYMBOLS[1]; 
+
+        // 3. Scatter (3%)
+        if(r < 0.090) return SYMBOLS[9];
+        
+        // 4. High Paying (7, Star) - Combined ~15%
+        if(r < 0.15) return SYMBOLS[2]; // 7
+        if(r < 0.24) return SYMBOLS[3]; // Star
+
+        // 5. Low Paying (Fillers) - 76% of all spins
+        if(r < 0.35) return SYMBOLS[4]; // Bar
+        if(r < 0.50) return SYMBOLS[5]; // Grape
+        if(r < 0.65) return SYMBOLS[6]; // Lemon
+        if(r < 0.82) return SYMBOLS[7]; // Cherry
+        return SYMBOLS[8];              // Plum
     }
 
     animateSpin() {
@@ -615,15 +610,12 @@ class SlotGame {
     }
 
     lockBell(el) {
-        const m = Math.random()<0.1;
+        const m = Math.random()<0.08; // Multiplier chance reduced
         if(m) {
             const x = Math.random()<0.5?2:3;
             el.innerHTML=`🔔<div class="sym-mult">x${x}</div>`; el.dataset.v=0; el.dataset.m=x;
         } else {
-            // **********************************************
-            // BELL KAZANCI %20 AZALTILDI: Max 5.0 -> 4.0; Min 0.5 -> 0.4
             const v = (this.betPerLine * (Math.random()*3.6+0.4)).toFixed(2); 
-            // **********************************************
             el.innerHTML=`🔔<div class="sym-val">${v}</div>`; el.dataset.v=v; el.dataset.m=1;
         }
         el.className='symbol sym-1 bonus-shaker';
@@ -654,7 +646,8 @@ class SlotGame {
             let hit = false;
             empties.forEach(el => {
                 el.classList.remove('spinning');
-                if(Math.random() < 0.12) { this.lockBell(el); hit = true; }
+                // Bonus Hit Probability Reduced to 5% (REAL HARD MODE)
+                if(Math.random() < 0.05) { this.lockBell(el); hit = true; }
                 else { el.className = 'symbol sym-dim'; el.textContent = this.getRndNonBell().char; }
             });
 
@@ -673,13 +666,9 @@ class SlotGame {
         
         cash *= mult;
         let msg = ""; const tb = this.betPerLine*20;
-        
-        // **********************************************
-        // JACKPOT KAZANÇLARI %20 AZALTILDI
-        if(cnt==20) { cash+=80*tb; msg="GRAND JACKPOT"; } // 100x -> 80x
-        else if(cnt>=15) { cash+=20*tb; msg="MAJOR JACKPOT"; } // 25x -> 20x
-        else if(cnt>=10) { cash+=8*tb; msg="MINI JACKPOT"; } // 10x -> 8x
-        // **********************************************
+        if(cnt==20) { cash+=80*tb; msg="GRAND JACKPOT"; } 
+        else if(cnt>=15) { cash+=20*tb; msg="MAJOR JACKPOT"; } 
+        else if(cnt>=10) { cash+=8*tb; msg="MINI JACKPOT"; } 
 
         document.getElementById('winAmountDisplay').textContent = cash.toFixed(2);
         document.getElementById('jackpotMsg').textContent = msg + (mult>1?` (x${mult})`:"");
