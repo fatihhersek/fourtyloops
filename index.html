@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Fato's Bells - V6</title>
+    <title>40'sBells - Slot</title>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,7 +16,7 @@
             --c-win: #22c55e;
             --c-error: #ef4444;
             --font-main: system-ui, -apple-system, sans-serif;
-            --font-hand: 'Pacifico', 'Brush Script MT', cursive; /* El yazısı fontu */
+            --font-hand: 'Pacifico', 'Brush Script MT', cursive;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -31,7 +31,6 @@
             overflow: hidden; overscroll-behavior: none;
         }
 
-        /* UTILS */
         .hidden { display: none !important; }
         .btn {
             cursor: pointer; border: 1px solid var(--c-neon); background: rgba(6, 182, 212, 0.1);
@@ -42,7 +41,6 @@
         .btn:active { transform: scale(0.95); }
         .btn-gold { border-color: var(--c-gold); color: var(--c-gold); background: rgba(251, 191, 36, 0.1); }
         .btn-red { border-color: var(--c-error); color: var(--c-error); background: rgba(239, 68, 68, 0.1); }
-        .btn-active { background: var(--c-neon); color: #000; box-shadow: 0 0 10px var(--c-neon); } 
 
         /* LOGIN & ADMIN */
         .login-screen, .admin-screen {
@@ -81,7 +79,6 @@
             .symbol { font-size: 12vw !important; }
         }
 
-        /* BONUS MODE VISUALS */
         .game-container.bonus-mode {
             background: radial-gradient(circle at center, #4c1d95 0%, #0f172a 100%);
             border-color: #d946ef;
@@ -89,7 +86,6 @@
         .game-container.bonus-mode .reels-frame { border-color: #d946ef; background: rgba(0,0,0,0.6); }
         .game-container.bonus-mode .header { background: rgba(76, 29, 149, 0.8); }
 
-        /* HEADER UI */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 5px 15px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #333;
@@ -116,7 +112,6 @@
         .big-win-text { animation: rainbow 1s infinite; font-size: 1.1rem !important; }
         @keyframes rainbow { 0% { color: #ff0000; } 50% { color: #ffff00; } 100% { color: #00ff00; } }
 
-        /* REELS */
         .reels-area {
             flex: 1; display: flex; justify-content: center; align-items: center;
             padding: 10px; overflow: hidden; position: relative; z-index: 10;
@@ -138,7 +133,6 @@
         }
         @media (min-width: 1px) { .symbol { font-size: clamp(1rem, 4vw, 2.5rem); } }
 
-        /* SYMBOLS STYLES */
         .sym-1 { color: var(--c-gold); background: linear-gradient(135deg, #450a0a, #7f1d1d); border-color: #f59e0b; box-shadow: inset 0 0 10px #000; } 
         .sym-2 { color: #ef4444; } .sym-3 { color: #a855f7; } .sym-4 { color: #22c55e; } .sym-5 { color: #ec4899; } 
         .sym-6 { color: #eab308; } .sym-7 { color: #f43f5e; } .sym-8 { color: #6366f1; } .sym-0 { color: #fff; text-shadow: 0 0 10px #fff; } .sym-9 { color: #06b6d4; } 
@@ -147,7 +141,6 @@
         .sym-val { position: absolute; bottom: 2%; font-size: 0.35em; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 4px; color: #fff; font-family: monospace; pointer-events: none; }
         .sym-mult { position: absolute; top: 5%; right: 5%; font-size: 0.4em; background: #ef4444; color: #fff; padding: 2px; border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 5px #ef4444; font-weight: bold; }
 
-        /* ANIMATIONS */
         .spinning .symbol {
             color: transparent; text-shadow: none;
             background-image: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.5) 75%, rgba(255,255,255,0.1) 100%);
@@ -161,11 +154,10 @@
         .bonus-shaker { animation: shake 0.5s infinite; border-color: #d946ef !important; background-color: rgba(217, 70, 239, 0.2) !important; }
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(2deg); } 75% { transform: rotate(-2deg); } }
 
-        /* CONTROLS */
         .controls { 
             height: 16%; background: #020617; border-top: 1px solid #333; 
             display: flex; justify-content: space-between; align-items: center; padding: 0 10px;
-            position: relative; z-index: 50; /* Spin butonu hatası için yüksek z-index */
+            position: relative; z-index: 50;
         }
         .control-group { display: flex; align-items: center; gap: 5px; }
         .bet-selector { display: flex; align-items: center; gap: 2px; background: #000; padding: 2px; border-radius: 5px; cursor: pointer; border: 1px solid #333; }
@@ -182,7 +174,6 @@
         #spinBtn:active:not(:disabled) { transform: scale(0.95); }
         #spinBtn:disabled { background: #333; border-color: #555; box-shadow: none; }
 
-        /* MODALS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; justify-content: center; align-items: center; }
         .modal { background: #0f172a; border: 2px solid var(--c-neon); width: 85%; max-width: 400px; padding: 20px; border-radius: 10px; color: #fff; text-align: center; }
         .paytable-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; text-align: left; font-size: 0.8rem;}
@@ -196,7 +187,7 @@
 
     <div id="app">
         <div id="loginScreen" class="login-screen">
-            <div class="login-title">Fato🔔🔔🔔's</div>
+            <div class="login-title">40's🔔🔔🔔Bells</div>
             <p style="color:#888;">SLOT MACHINE</p>
             <div class="input-group"><input type="text" id="usernameInput" maxlength="10" placeholder="PLAYER CODE"></div>
             <div id="loginMsg" style="color: var(--c-error); height: 20px; margin-bottom: 10px;"></div>
@@ -211,7 +202,7 @@
 
         <div id="gameScreen" class="game-container hidden">
             <header class="header">
-                <div class="brand"><h1>Fato🔔🔔🔔's</h1></div>
+                <div class="brand"><h1>40's🔔🔔🔔Bells</h1></div>
                 <div class="bonus-header-ui" id="bonusHeader">
                     <div class="bonus-header-text">BONUS RESPIN:</div>
                     <div class="respin-count" id="bonusRespins">3</div>
@@ -296,24 +287,21 @@
 <script>
 /* CONFIGURATION */
 const PLAYERS = ["ALEX", "HAGI", "NOUMA", "MESSI", "RONALDO"];
-const MASTER_CODE = "FATOMASTER"; // Admin Master Kod
-const STORAGE_PREFIX = "fatosbells_v6_";
+const ADMIN_CODE = "YFTHH";
+const STORAGE_PREFIX = "bells_40s_v1_";
+const MASTER_FS_CODE = "SUPERBELLS"; // Total 500 Credit Bet (Line 25)
 
-// FreeSpin Kodları (Bonus Başlatır)
-const FREESPIN_CODES = [
-    "FS-LUCKY-01","FS-LUCKY-02","FS-LUCKY-03","FS-LUCKY-04","FS-LUCKY-05",
-    "FS-GOLD-10","FS-GOLD-11","FS-GOLD-12","FS-GOLD-13","FS-GOLD-14",
-    "FS-WIN-20","FS-WIN-21","FS-WIN-22","FS-WIN-23","FS-WIN-24",
-    "FS-BONUS-30","FS-BONUS-31","FS-BONUS-32","FS-BONUS-33","FS-BONUS-34",
-    "FS-MEGA-40","FS-MEGA-41","FS-MEGA-42","FS-MEGA-43","FS-MEGA-44",
-    "FS-SUPER-50","FS-SUPER-51","FS-SUPER-52","FS-SUPER-53","FS-SUPER-54",
-    "FS-FATO-60","FS-FATO-61","FS-FATO-62","FS-FATO-63","FS-FATO-64",
-    "FS-BELLS-70","FS-BELLS-71","FS-BELLS-72","FS-BELLS-73","FS-BELLS-74",
-    "FS-LINK-80","FS-LINK-81","FS-LINK-82","FS-LINK-83","FS-LINK-84",
-    "FS-JACKPOT-90","FS-JACKPOT-91","FS-JACKPOT-92","FS-JACKPOT-93","FS-JACKPOT-94"
-];
+// 20 UNIQUE FREESPIN CODES PER PLAYER (Total 200 Credit Bet -> Line 10)
+const PLAYER_FS_CODES = {
+    "ALEX": ["A1X9L2", "B3K7P1", "C8M4N6", "D2J5H9", "E6R1T3", "F9Q8W4", "G5Y2U7", "H4I6O1", "J7P3L8", "K2M9N5", "L6B1V4", "M3C8X2", "N9Z5Q7", "P1W4R6", "Q7E2T9", "R4Y6U3", "S8I1O5", "T2P9L4", "U5M3N8", "V1B7V6"],
+    "HAGI": ["H9G1I2", "I3A7H4", "J8N4G6", "K2B5I9", "L6V1C3", "M9X8Z4", "N5L2K7", "P4J6H1", "Q7G3F8", "R2D9S5", "S6A1Q4", "T3W8E2", "U9R5T7", "V1Y4U6", "W7I2O9", "X4P6L3", "Y8M1N5", "Z2B9V4", "A5C3X8", "B1Z7Q6"],
+    "NOUMA": ["N1O9U2", "O3M7A1", "P8S4D6", "Q2F5G9", "R6H1J3", "S9K8L4", "T5Z2X7", "U4C6V1", "V7B3N8", "W2M9Q5", "X6W1E4", "Y3R8T2", "Z9Y5U7", "A1I4O6", "B7P2A9", "C4S6D3", "D8F1G5", "E2H9J4", "F5K3L8", "G1Z7X6"],
+    "MESSI": ["M9E1S2", "E3S7I4", "S8M4E6", "I2E5S9", "L6S1I3", "E9M8E4", "S5I2S7", "S4M6E1", "I7E3S8", "M2S9I5", "E6S1M4", "S3I8E2", "S9M5S7", "I1E4M6", "M7S2E9", "E4I6S3", "S8E1M5", "S2M9I4", "I5S3E8", "M1E7S6"],
+    "RONALDO": ["R9O1N2", "O3N7A4", "N8A4L6", "A2L5D9", "L6D1O3", "D9O8R4", "O5N2A7", "R4A6L1", "N7L3D8", "A2D9O5", "L6O1N4", "D3R8A2", "O9N5L7", "R1A4D6", "N7O2R9", "A4L6D3", "L8D1O5", "D2O9N4", "O5R3A8", "R1N7L6"]
+};
 
-const CREDIT_CODES = { "ALEX": ["C-ALX-01"], "HAGI": ["C-HGI-01"] }; // Örnek kredi kodları
+// Sample Credit Codes (Can remain same or empty)
+const CREDIT_CODES = { "ALEX": ["CALEX100"], "HAGI": ["CHAGI100"] };
 
 const SYMBOLS = [
     { id: 0, name: 'WILD', char: '🃏', val: 0 },
@@ -370,7 +358,6 @@ class SlotGame {
         document.getElementById('betBox').onclick = () => this.openBetModal();
         document.getElementById('btnAuto').onclick = () => this.toggleAuto();
         
-        // NEW REDEEM LOGIC
         document.getElementById('btnOpenRedeem').onclick = () => document.getElementById('redeemModal').style.display='flex';
         document.getElementById('btnConfirmRedeem').onclick = () => this.redeemCode();
         
@@ -431,7 +418,17 @@ class SlotGame {
         };
     }
 
-    reset(p) { localStorage.removeItem(`${STORAGE_PREFIX}${p}_bal`); this.showAdmin(); }
+    reset(p) { 
+        localStorage.removeItem(`${STORAGE_PREFIX}${p}_bal`); 
+        // Clear used codes (Credit & FreeSpin)
+        for (let i=0; i<localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if(k && k.startsWith(`${STORAGE_PREFIX}${p}_code_`)) {
+                localStorage.removeItem(k);
+            }
+        }
+        this.showAdmin(); 
+    }
 
     redeemCode() {
         const input = document.getElementById('codeInputLarge');
@@ -441,32 +438,46 @@ class SlotGame {
         if(!code) return;
 
         // 1. ADMIN CHECK
-        if(code === MASTER_CODE) {
+        if(code === ADMIN_CODE) {
             this.showAdmin();
             input.value = '';
             return;
         }
 
-        // 2. FREESPIN CHECK
-        if(FREESPIN_CODES.includes(code)) {
+        // 2. MASTER FREESPIN (500 TOTAL BET)
+        if(code === MASTER_FS_CODE) {
+            this.betPerLine = 25.0; // Total 500
+            this.updateUI();
+            alert("🔥 MASTER BONUS! BET: 500");
+            this.triggerBonusNow();
+            input.value = '';
+            return;
+        }
+
+        // 3. PLAYER FREESPIN (200 TOTAL BET)
+        if(PLAYER_FS_CODES[this.user] && PLAYER_FS_CODES[this.user].includes(code)) {
              if(localStorage.getItem(`${STORAGE_PREFIX}${this.user}_code_${code}`) === 'true') {
                 alert("⚠️ Bu kod daha önce kullanıldı!");
             } else {
                 localStorage.setItem(`${STORAGE_PREFIX}${this.user}_code_${code}`, 'true');
-                alert("🎁 FREESPIN AKTİF! Bonus turu başlıyor...");
+                this.betPerLine = 10.0; // Total 200
+                this.updateUI();
+                alert("🎁 FREESPIN AKTİF! BET: 200");
+                this.triggerBonusNow();
                 input.value = '';
-                // Force Start Bonus
-                let bells = []; // Empty, will fill randomly
-                // Generate at least 5 random bells for visual start
-                for(let i=0; i<5; i++) bells.push({c:i, r: Math.floor(Math.random()*4)});
-                this.startBonus(bells);
             }
             return;
         }
         
-        // 3. CREDIT CHECK (Mockup)
+        // 4. INVALID
         alert("❌ Geçersiz Kod");
         input.value = '';
+    }
+    
+    triggerBonusNow() {
+        let bells = [];
+        for(let i=0; i<5; i++) bells.push({c:i, r: Math.floor(Math.random()*4)});
+        this.startBonus(bells);
     }
 
     changeBet(d) { if(!this.isSpinning) { this.betPerLine = Math.max(0.1, Math.min(100, this.betPerLine+d)); this.updateUI(); } }
@@ -499,7 +510,6 @@ class SlotGame {
 
     startBonusMusic() { 
         if(!this.soundOn) return;
-        // Fun Major Melody
         let n=0; const notes=[523, 659, 784, 1046, 784, 659];
         this.musInt = setInterval(()=>{ this.playTone(notes[n%6], 'triangle', 0.1); n++; }, 150);
     }
